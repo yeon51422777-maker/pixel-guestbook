@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>픽셀 방명록</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#121216;--panel:#1c1c22;--line:#34343f;--text:#f1f1f4;--sub:#a7a7b3;--acc:#7bd36a;--acc2:#ffd257}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Galmuri11','Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+button{font-family:inherit;cursor:pointer}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:14px 18px;border:2px solid #000;border-radius:12px;background:var(--acc);color:#10210b;font-size:16px;font-weight:700;box-shadow:0 4px 0 #2f6b26}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #2f6b26}
+.btn.ghost{background:#2a2a33;color:var(--text);box-shadow:0 4px 0 #0c0c10;border-color:#44444f}
+.btn.danger{background:#e2574c;color:#fff;box-shadow:0 4px 0 #8c2a22}
+.btn.full{width:100%}
+.btn:disabled{opacity:.5}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#000;color:#fff;padding:12px 18px;border-radius:12px;z-index:99;font-size:14px;border:2px solid #444}
+/* 모바일 */
+body.mobile{min-height:100dvh}
+.phone{max-width:460px;margin:0 auto;padding:22px 16px 40px;min-height:100dvh;display:flex;flex-direction:column;gap:16px}
+.phone.wide{max-width:640px}
+.box{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.g-title{font-size:24px;line-height:1.3;text-align:center}
+.g-sub{color:var(--sub);text-align:center;font-size:14px;line-height:1.6}
+.center{display:flex;flex-direction:column;align-items:center;gap:12px}
+.builder{display:flex;flex-direction:column;gap:12px}
+.pvwrap{display:flex;flex-direction:column;align-items:center;gap:10px;background:radial-gradient(#2f5428,#162414);border:2px solid var(--line);border-radius:16px;padding:16px}
+.pv{height:150px;width:auto}
+.pvwrap.stick{padding:10px}
+.pvwrap.stick{position:sticky;top:0;z-index:5}
+.minirow{display:flex;gap:8px}
+.btn.mini{padding:8px 12px;font-size:13px}
+.secs{display:flex;flex-direction:column;gap:18px}
+.sec-t{font-size:14px;color:var(--acc2);margin-bottom:8px}
+.sec-n{font-size:12px;color:var(--sub);margin:-4px 0 8px;line-height:1.5}
+.joy{width:180px;height:180px;border-radius:50%;background:radial-gradient(#2c2c36,#17171c);border:3px solid var(--line);position:relative;touch-action:none;margin:4px auto;user-select:none;-webkit-user-select:none}
+.joy:before{content:'▲';position:absolute;top:8px;left:50%;transform:translateX(-50%);color:#555}
+.joy:after{content:'▼';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#555}
+.knob{width:72px;height:72px;border-radius:50%;background:var(--acc2);border:3px solid #000;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 4px 0 #a07f1a;pointer-events:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 11px;border-radius:99px;border:2px solid var(--line);background:#24242c;color:var(--text);font-size:13px}
+.chip.on{background:var(--acc2);color:#2a2000;border-color:#000}
+.me{display:flex;align-items:center;gap:12px}
+.me canvas{height:84px;width:auto}
+.sendrow{display:flex;gap:8px}
+.sendrow .in{flex:1;min-width:0}
+.sendrow .btn{flex:0 0 auto}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tab{flex:0 0 auto;padding:9px 13px;border-radius:10px;border:2px solid var(--line);background:#24242c;color:var(--sub);font-size:14px}
+.tab.on{background:var(--acc2);color:#2a2000;border-color:#000}
+.opts{display:grid;gap:8px}
+.opts.shapes,.opts.crops{grid-template-columns:repeat(4,1fr)}
+.opts.colors{grid-template-columns:repeat(7,1fr)}
+.op{background:#24242c;border:2px solid var(--line);border-radius:12px;padding:6px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.op canvas{height:76px;width:auto}
+.opts.crops .op canvas{height:54px}
+.op span{font-size:11px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.op.on span{color:var(--acc2)}
+.op.on,.sw.on{border-color:var(--acc2);box-shadow:0 0 0 2px var(--acc2)}
+.sw{aspect-ratio:1;border-radius:12px;border:2px solid #000}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--sub)}
+.in{font-family:inherit;font-size:17px;padding:13px 14px;border-radius:12px;border:2px solid var(--line);background:#101014;color:var(--text);width:100%}
+textarea.in{resize:none;height:90px}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.cnt-hint{text-align:right;font-size:12px;color:var(--sub)}
+.bubble{background:#fff;color:#222;border:2px solid #000;border-radius:10px;padding:10px 14px;font-size:15px;position:relative;max-width:260px;text-align:center;line-height:1.4}
+.bubble:after{content:'';position:absolute;left:50%;bottom:-12px;margin-left:-6px;border:6px solid transparent;border-top-color:#fff}
+.note{background:#3a3210;border:2px solid #7a6a20;color:#ffe9a0;border-radius:12px;padding:12px;font-size:13px;line-height:1.6}
+.foot{color:#5c5c68;font-size:11px;text-align:center;margin-top:auto}
+/* 관리자 */
+h2{font-size:18px}
+.list{display:flex;flex-direction:column}
+.li{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.li canvas{height:60px;width:auto;flex:0 0 auto}
+.li .tx{flex:1;min-width:0}
+.li .tx p{color:var(--sub);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px}
+.tog{display:flex;align-items:center;justify-content:space-between;font-size:15px}
+.tog input{width:22px;height:22px}
+.url{font-size:12px;color:var(--sub);word-break:break-all}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.sheet{background:var(--bg);width:100%;max-width:460px;max-height:92dvh;overflow:auto;border-radius:18px 18px 0 0;padding:16px;display:flex;flex-direction:column;gap:12px}
+/* 큰 화면 */
+body.screen{overflow:hidden;height:100vh}
+body.screen #app{display:flex;width:100vw;height:100vh}
+.stage{position:relative;flex:1;height:100vh;overflow:hidden;background:#78b84a}
+.world{position:absolute;inset:0;width:100%;height:100%}
+.qrbox{position:absolute;left:2vh;top:2vh;background:#fff;padding:1.2vh;border-radius:1.4vh;border:.4vh solid #1d1b22;text-align:center;color:#1d1b22;box-shadow:0 .6vh 0 rgba(0,0,0,.35)}
+.qrbox .qr img,.qrbox .qr canvas{width:16vh!important;height:16vh!important;display:block}
+.qrt{font-size:1.9vh;margin-top:.8vh;font-weight:700}
+.titlebar{position:absolute;left:50%;bottom:2.2vh;transform:translateX(-50%);background:rgba(20,18,26,.85);border:.3vh solid #000;border-radius:99px;padding:1.1vh 3vh;display:flex;gap:2vh;align-items:center;white-space:nowrap;font-size:2.6vh}
+.titlebar .cnt{color:var(--acc2);font-size:2vh}
+.fsbtn{position:absolute;right:1.5vh;top:1.5vh;background:rgba(0,0,0,.45);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:13px;opacity:.55}
+.demotag{position:absolute;right:1.5vh;bottom:1.5vh;background:#ffd257;color:#2a2000;border-radius:8px;padding:4px 10px;font-size:12px}
+.panel{width:26vw;max-width:460px;min-width:260px;height:100vh;background:#f5f2ea;color:#1d1b22;display:flex;flex-direction:column;border-left:.5vh solid #1d1b22}
+.panel-h{padding:2vh 2.2vh;font-size:2.4vh;font-weight:700;border-bottom:.3vh solid #1d1b22;background:#ffd257}
+.cards{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.card{display:flex;gap:1.6vh;align-items:center;padding:1.4vh 2vh;border-bottom:.25vh solid #d9d2c2}
+.card canvas{height:10.5vh;width:auto;flex:0 0 auto;background:#e7e0cf;border-radius:1vh}
+.card b{display:block;font-size:2.3vh;margin-bottom:.6vh}
+.card p{font-size:1.9vh;color:#4a4552;line-height:1.4;word-break:keep-all}
+.card.new{animation:pop .6s ease-out;background:#fff6cf}
+@keyframes pop{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =========================================================
+   픽셀 방명록 · © 에듀테크리더스
+   1) 아래 FIREBASE_CONFIG를 채우면 실제 행사용(여러 기기 실시간)
+   2) 비워두면 '체험 모드' : 같은 브라우저의 탭끼리만 동작
+   ========================================================= */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAYTH8s70G872us9Ee04XTfRdaQqHxE_sc",
+  authDomain: "sincere-sun-424907-p1.firebaseapp.com",
+  databaseURL: "https://sincere-sun-424907-p1-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sincere-sun-424907-p1",
+  appId: "1:590165260305:web:159a54a4dffda296c559b0"
+};
+const ADMIN_PIN = ""; // 관리자 화면 비밀번호 (비우면 없음)
+
+/* ---------- 공통 ---------- */
+const params = new URLSearchParams(location.search);
+const MODE = params.get('mode') || '';
+const ROOM = (params.get('room') || 'main').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 30) || 'main';
+const $ = (s, el = document) => el.querySelector(s);
+const app = $('#app');
+function h(tag, attrs = {}, ...kids) {
+  const el = document.createElement(tag);
+  for (const k in attrs) {
+    if (k === 'class') el.className = attrs[k];
+    else if (k === 'style') el.style.cssText = attrs[k];
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), attrs[k]);
+    else el.setAttribute(k, attrs[k]);
+  }
+  for (const c of kids.flat()) { if (c == null) continue; el.append(c.nodeType ? c : document.createTextNode(c)); }
+  return el;
+}
+function urlFor(mode) { const u = new URL(location.href); u.search = ''; u.hash = ''; u.searchParams.set('room', ROOM); if (mode) u.searchParams.set('mode', mode); return u.toString(); }
+function toast(t) { const d = h('div', { class: 'toast' }, t); document.body.append(d); setTimeout(() => d.remove(), 2200); }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.append(s); }); }
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* ---------- 픽셀 캐릭터 ---------- */
+const SKIN = ['#fbe3d0', '#f8d9bd', '#efc29d', '#d9a27c', '#a8714f', '#7d5236'];
+const HAIRC = ['#2b2220', '#5b3a29', '#8d5b3a', '#d9b46a', '#c9c9d1', '#b33a3a', '#3557c4', '#e38fb6', '#2e8b57', '#f2f2f2', '#7a4fc9', '#e8793a'];
+const CLOTHC = ['#26262b', '#f2f2f2', '#3f6fd1', '#2e8b57', '#c94b4b', '#e8a33d', '#8e5bc9', '#7a8a99', '#f19bb6', '#4fb3c9', '#f2d64b', '#a3d977', '#5c3b2e'];
+const PANTSC = ['#3b5b8f', '#26262b', '#e8dcc0', '#7a7f88', '#f2f2f2', '#5c3b2e', '#1f2f55', '#f19bb6', '#c94b4b', '#2e8b57'];
+const HAIR_NAMES = ['기본', '옆가르마', '긴 생머리', '단발', '상투', '뾰족', '짧은 머리', '포니테일', '양갈래', '똥머리', '뽀글 파마', '웨이브 장발', '모히칸', '일자 뱅'];
+const EYES_NAMES = ['점 눈', '웃는 눈', '반짝 눈', '윙크', '졸린 눈', '화난 눈', '진한 눈썹', '놀란 눈'];
+const MOUTH_NAMES = ['기본', '활짝', '오!', '일자', '메롱', '큰 미소'];
+const EXTRA_NAMES = ['없음', '볼터치', '주근깨', '콧수염', '턱수염', '반창고', '점'];
+const GLASSES_NAMES = ['없음', '동그란 안경', '네모 안경', '선글라스', '초록 선글라스', '하트 안경'];
+const HAT_NAMES = ['없음', '캡모자', '비니', '리본', '꽃 화관', '왕관', '고깔모자', '고양이 귀', '헤드폰', '토끼 귀', '꽃핀', '중절모'];
+const OUTFIT_NAMES = ['정장', '후드티', '트레이닝복', '원피스', '티셔츠', '멜빵바지', '한복', '롱드레스', '셔츠+조끼', '가디건+치마', '체크셔츠', '니트'];
+const POSE_NAMES = ['차렷', '손 인사', '브이', '만세', '머리 하트', '박수', '허리 손', '경례'];
+const ITEM_NAMES = ['없음', '꽃다발', '하트 풍선', '선물상자', '하트 피켓', '카메라', '아이스크림', '응원봉', '커피'];
+const CFG_KEYS = { skin: SKIN.length, hair: HAIR_NAMES.length, hairC: HAIRC.length, eyes: EYES_NAMES.length, mouth: MOUTH_NAMES.length, extra: EXTRA_NAMES.length, glasses: GLASSES_NAMES.length, hat: HAT_NAMES.length, hatC: CLOTHC.length, outfit: OUTFIT_NAMES.length, clothC: CLOTHC.length, pantsC: PANTSC.length, pose: POSE_NAMES.length, item: ITEM_NAMES.length };
+const SPR_W = 26, SPR_H = 32, OXG = 5, OYG = 7;
+const ri = n => Math.floor(Math.random() * n);
+const clampI = (v, n) => { v = +v; return Number.isInteger(v) && v >= 0 && v < n ? v : 0; };
+function normCfg(c) {
+  c = { ...(c || {}) };
+  if (c.face != null && c.eyes == null) { const f = +c.face; if (f === 1) { c.eyes = 1; c.extra = 1; } if (f === 2) c.glasses = 1; if (f === 3) c.glasses = 3; if (f === 4) c.glasses = 4; }
+  const o = {}; for (const k in CFG_KEYS) o[k] = clampI(c[k], CFG_KEYS[k]); return o;
+}
+function randCfg() {
+  const m = (n, p) => Math.random() < p ? 1 + ri(n - 1) : 0, K = CFG_KEYS;
+  return { skin: ri(5), hair: ri(K.hair), hairC: ri(8), eyes: ri(K.eyes), mouth: ri(K.mouth), extra: m(K.extra, .3), glasses: m(K.glasses, .3), hat: m(K.hat, .35), hatC: ri(CLOTHC.length), outfit: ri(K.outfit), clothC: ri(CLOTHC.length), pantsC: ri(PANTSC.length), pose: ri(K.pose), item: m(K.item, .35) };
+}
+function shade(hex, a) {
+  const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = n >> 8 & 255, b = n & 255;
+  const f = v => clamp(Math.round(a < 0 ? v * (1 + a) : v + (255 - v) * a), 0, 255);
+  return '#' + [f(r), f(g), f(b)].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+/* 팔 경로: 오른팔 기준 [x,y,w,h] 목록 (마지막 = 손). 왼팔은 좌우 반전 */
+const A_DOWN = [[[11, 14, 2, 2], [11, 16, 2, 3], [11, 19, 2, 1]]];
+const A_UP = [[[11, 14, 2, 1], [12, 11, 2, 3], [13, 8, 2, 3], [13, 6, 2, 2]], [[11, 14, 2, 1], [12, 10, 2, 4], [13, 6, 2, 4], [13, 4, 2, 2]]];
+const POSES = [
+  { r: A_DOWN, l: A_DOWN },
+  { r: [[[11, 14, 2, 1], [12, 12, 2, 2], [13, 9, 2, 3], [13, 7, 2, 2]], [[11, 14, 2, 1], [12, 12, 2, 2], [14, 9, 2, 3], [15, 7, 2, 2]]], l: A_DOWN },
+  { r: [[[11, 14, 2, 1], [12, 12, 2, 2], [13, 9, 2, 3], [13, 8, 3, 1]]], l: A_DOWN, fx: (R, sk) => { R(13, 6, 1, 2, sk); R(15, 6, 1, 2, sk); } },
+  { r: A_UP, l: A_UP, hop: true },
+  { r: [[[11, 14, 2, 1], [12, 11, 2, 3], [13, 7, 2, 4], [14, 3, 2, 4], [13, 1, 2, 2], [11, -1, 2, 2], [9, -2, 2, 2], [8, -1, 1, 2]]], l: null },
+  { r: [[[11, 14, 2, 2], [11, 16, 2, 1], [9, 17, 2, 1], [8, 16, 1, 2]], [[11, 14, 2, 2], [11, 16, 2, 1], [10, 17, 1, 1], [9, 16, 1, 2]]], l: null },
+  { r: [[[11, 14, 2, 1], [12, 15, 2, 1], [13, 16, 1, 2], [11, 18, 2, 1]]], l: null },
+  { r: [[[11, 14, 2, 1], [12, 11, 2, 3], [13, 8, 2, 3], [12, 6, 2, 2]]], l: A_DOWN }
+];
+POSES.forEach(p => { if (p.l === null) p.l = p.r; });
+const poseShowsItem = pose => POSES[pose].l === A_DOWN;
+
+function buildGrid(cfg, frame) {
+  const g = Array.from({ length: SPR_H }, () => Array(SPR_W).fill(null));
+  const R = (x, y, w, hh, c) => { for (let j = 0; j < hh; j++) for (let i = 0; i < w; i++) { const X = x + i + OXG, Y = y + j + OYG; if (X >= 0 && X < SPR_W && Y >= 0 && Y < SPR_H) g[Y][X] = c; } };
+  const Rm = (x, y, w, hh, c) => R(16 - x - w, y, w, hh, c);
+  const RR = (x, y, w, hh, c) => { R(x, y, w, hh, c); Rm(x, y, w, hh, c); };
+  const get = (x, y) => (g[y + OYG] || [])[x + OXG];
+  const C = (x, y) => { const X = x + OXG, Y = y + OYG; if (g[Y]) g[Y][X] = null; };
+  const sk = SKIN[cfg.skin], hc = HAIRC[cfg.hairC], cc = CLOTHC[cfg.clothC], pc = PANTSC[cfg.pantsC], htc = CLOTHC[cfg.hatC];
+  const dark = '#2a2630', W = '#f5f5f5', red = '#d94050', pink = '#e8435a', G = '#4c8a2e';
+  const walking = typeof frame === 'number', pf = frame === 'p1' ? 1 : 0;
+  const pose = POSES[walking ? 0 : cfg.pose];
+  const lUp = frame === 1 ? 1 : 0, rUp = frame === 2 ? 1 : 0, o = cfg.outfit;
+
+  /* ── 옷 설정 ── */
+  let legs = 'pants', pants = pc, shoe = '#2b2b2b', sleeve = 'long', sl = shade(cc, -.12);
+  if (o === 0) pants = shade(cc, -.25);
+  if (o === 1) shoe = '#f0f0f0';
+  if (o === 2) { pants = cc; shoe = '#f0f0f0'; }
+  if (o === 3) { legs = 'thin'; sleeve = 'short'; }
+  if (o === 4) { sleeve = 'short'; shoe = '#f0f0f0'; }
+  if (o === 5) { sleeve = 'short'; sl = cc; }
+  if (o === 6) { legs = 'none'; sl = cc; }
+  if (o === 7) { legs = 'none'; sleeve = 'none'; }
+  if (o === 8) sl = '#e4e4ea';
+  if (o === 9) legs = 'thin';
+
+  /* ── 다리 ── */
+  if (legs === 'pants') { R(5, 20 - lUp, 2, 3, pants); R(9, 20 - rUp, 2, 3, pants); }
+  if (legs === 'thin') { R(5, 20 - lUp, 2, 3, sk); R(9, 20 - rUp, 2, 3, sk); }
+  if (legs !== 'none') { R(5, 23 - lUp, 2, 1, shoe); R(9, 23 - rUp, 2, 1, shoe); }
+
+  /* ── 몸통 ── */
+  R(5, 14, 6, 6, cc);
+  switch (o) {
+    case 0: R(7, 14, 2, 5, '#fafafa'); R(7, 15, 2, 3, '#b8323a'); R(6, 14, 1, 3, shade(cc, -.3)); R(9, 14, 1, 3, shade(cc, -.3)); break;
+    case 1: R(5, 13, 6, 1, shade(cc, -.15)); R(6, 14, 1, 3, W); R(9, 14, 1, 3, W); R(6, 17, 4, 2, shade(cc, -.15)); break;
+    case 2: R(6, 13, 4, 1, cc); R(7, 14, 1, 6, shade(cc, -.35)); break;
+    case 3: R(4, 18, 8, 2, cc); R(3, 20, 10, 1, cc); R(5, 17, 6, 1, shade(cc, -.2)); R(3, 20, 10, 1, shade(cc, -.1)); break;
+    case 4: R(6, 14, 4, 1, shade(cc, -.18)); { const ac = cfg.clothC === 4 ? W : pink; R(6, 16, 1, 1, ac); R(8, 16, 1, 1, ac); R(6, 17, 3, 1, ac); R(7, 18, 1, 1, ac); } break;
+    case 5: R(6, 16, 4, 4, pc); R(5, 14, 1, 3, pc); R(10, 14, 1, 3, pc); R(5, 18, 6, 2, pc); R(6, 16, 1, 1, '#f2c94c'); R(9, 16, 1, 1, '#f2c94c'); R(7, 17, 2, 1, shade(pc, -.2)); break;
+    case 6: R(7, 14, 2, 1, W); R(6, 14, 1, 1, W); R(8, 16, 1, 3, red); R(7, 16, 1, 1, red); R(5, 17, 6, 2, pc); R(4, 19, 8, 2, pc); R(3, 21, 10, 3, pc); R(3, 23, 10, 1, shade(pc, -.18)); R(6, 20, 1, 3, shade(pc, -.1)); R(9, 20, 1, 3, shade(pc, -.1)); break;
+    case 7: R(5, 17, 6, 1, shade(cc, -.12)); R(4, 18, 8, 2, cc); R(3, 20, 10, 2, cc); R(2, 22, 12, 2, cc); R(5, 19, 1, 5, shade(cc, -.1)); R(10, 19, 1, 5, shade(cc, -.1)); R(2, 23, 12, 1, shade(cc, -.18)); R(7, 14, 2, 1, shade(cc, .4)); break;
+    case 8: R(5, 14, 6, 6, '#e4e4ea'); R(5, 15, 2, 5, cc); R(9, 15, 2, 5, cc); R(7, 14, 2, 4, '#3a3340'); R(6, 17, 1, 1, '#f2c94c'); break;
+    case 9: R(7, 14, 2, 5, W); R(6, 15, 1, 1, W); R(6, 17, 1, 1, W); R(5, 19, 6, 1, pc); R(4, 20, 8, 1, pc); R(4, 20, 8, 1, shade(pc, -.12)); break;
+    case 10: for (let y = 14; y < 20; y++) for (let x = 5; x < 11; x++) if (x % 3 === 0 || y % 3 === 0) R(x, y, 1, 1, shade(cc, -.28)); R(7, 14, 2, 1, W); break;
+    case 11: R(5, 15, 6, 1, shade(cc, .35)); R(5, 17, 6, 1, shade(cc, .35)); R(6, 14, 4, 1, shade(cc, -.2)); R(5, 19, 6, 1, shade(cc, -.2)); break;
+  }
+  if (o !== 1 && o !== 2) R(7, 13, 2, 1, sk);
+
+  /* ── 얼굴 ── */
+  R(3, 2, 10, 11, sk); C(3, 12); C(12, 12); RR(2, 7, 1, 2, sk);
+  switch (cfg.extra) {
+    case 1: RR(4, 9, 2, 1, '#f2a0a0'); break;
+    case 2: { const fk = shade(sk, -.28); RR(4, 9, 1, 1, fk); RR(5, 10, 1, 1, fk); R(6, 9, 1, 1, fk); } break;
+    case 3: R(5, 9, 6, 1, hc); RR(5, 10, 1, 1, hc); break;
+    case 4: RR(3, 9, 1, 4, hc); R(4, 11, 8, 2, hc); R(5, 13, 6, 1, hc); break;
+    case 5: R(10, 9, 3, 1, '#f0d3a0'); R(11, 9, 1, 1, '#d9b07a'); break;
+    case 6: R(10, 10, 1, 1, dark); break;
+  }
+  switch (cfg.eyes) {
+    case 0: RR(5, 7, 1, 2, dark); break;
+    case 1: [[4, 8], [5, 7], [6, 8]].forEach(([a, b]) => RR(a, b, 1, 1, dark)); break;
+    case 2: RR(4, 7, 2, 2, dark); R(4, 7, 1, 1, W); R(10, 7, 1, 1, W); break;
+    case 3: R(5, 7, 1, 2, dark); R(9, 8, 3, 1, dark); break;
+    case 4: RR(4, 8, 2, 1, dark); break;
+    case 5: RR(5, 7, 1, 2, dark); RR(4, 5, 1, 1, dark); RR(5, 6, 2, 1, dark); break;
+    case 6: RR(5, 7, 1, 2, dark); RR(4, 5, 3, 1, hc); break;
+    case 7: RR(4, 6, 3, 3, dark); RR(5, 7, 1, 1, W); break;
+  }
+  { const mc = shade(sk, -.32), mo = '#8a2d35';
+    switch (cfg.mouth) {
+      case 0: R(7, 10, 2, 1, mc); break;
+      case 1: R(6, 10, 4, 2, mo); R(7, 10, 2, 1, W); break;
+      case 2: R(7, 10, 2, 2, mo); break;
+      case 3: R(6, 10, 4, 1, dark); break;
+      case 4: R(6, 10, 4, 1, mc); R(8, 11, 2, 1, '#e86a7a'); break;
+      case 5: RR(5, 10, 1, 1, mc); R(6, 11, 4, 1, mc); break;
+    } }
+  { const fr = '#3a3340';
+    switch (cfg.glasses) {
+      case 1: RR(5, 6, 1, 1, fr); RR(4, 7, 1, 2, fr); RR(6, 7, 1, 2, fr); RR(5, 9, 1, 1, fr); R(7, 7, 2, 1, fr); break;
+      case 2: RR(3, 6, 4, 1, fr); RR(3, 9, 4, 1, fr); RR(3, 7, 1, 2, fr); RR(6, 7, 1, 2, fr); R(7, 7, 2, 1, fr); break;
+      case 3: RR(3, 7, 4, 2, '#151515'); R(7, 7, 2, 1, '#151515'); RR(4, 7, 1, 1, '#777'); break;
+      case 4: R(3, 6, 10, 1, '#151515'); RR(3, 7, 4, 2, '#33e06a'); RR(4, 7, 1, 1, '#c8ffd9'); break;
+      case 5: ['.X.X.', 'XXXXX', '.XXX.', '..X..'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') RR(2 + i, 6 + j, 1, 1, '#ff5c8a'); })); RR(3, 7, 1, 1, '#ffd1dc'); R(7, 7, 2, 1, '#ff5c8a'); break;
+    } }
+
+  /* ── 머리카락 ── */
+  { const hi = shade(hc, .25), dk = shade(hc, -.22);
+    const base = () => { R(3, 0, 10, 1, hc); R(2, 1, 12, 3, hc); R(2, 4, 1, 3, hc); R(13, 4, 1, 3, hc); R(5, 1, 3, 1, hi); };
+    switch (cfg.hair) {
+      case 0: base(); R(3, 4, 4, 1, hc); R(9, 4, 4, 1, hc); RR(3, 5, 1, 1, hc); break;
+      case 1: base(); R(3, 4, 7, 1, hc); R(3, 5, 3, 1, hc); R(12, 4, 1, 2, hc); break;
+      case 2: base(); RR(3, 4, 3, 1, hc); RR(1, 4, 2, 13, hc); RR(1, 16, 1, 1, dk); break;
+      case 3: base(); R(3, 4, 10, 1, hc); RR(3, 5, 2, 1, hc); RR(1, 4, 2, 8, hc); break;
+      case 4: R(6, -2, 4, 2, hc); R(7, -2, 2, 1, hi); base(); RR(3, 4, 4, 1, hc); RR(1, 4, 2, 4, hc); break;
+      case 5: base(); R(3, -1, 2, 1, hc); R(6, -2, 2, 2, hc); R(9, -1, 2, 1, hc); R(12, 0, 1, 1, hc); R(3, 4, 2, 1, hc); R(6, 4, 2, 1, hc); R(10, 4, 3, 1, hc); break;
+      case 6: R(3, 1, 10, 1, hc); R(2, 2, 12, 2, hc); RR(2, 4, 1, 2, hc); R(5, 2, 3, 1, hi); break;
+      case 7: base(); R(3, 4, 5, 1, hc); R(11, 4, 2, 1, hc); R(14, 2, 2, 3, hc); R(15, 5, 2, 6, hc); R(16, 11, 1, 2, hc); R(14, 2, 1, 1, '#e04848'); break;
+      case 8: base(); RR(3, 4, 4, 1, hc); RR(-1, 4, 3, 8, hc); RR(0, 12, 1, 1, hc); RR(0, 3, 2, 1, '#e04848'); break;
+      case 9: R(5, -5, 6, 4, hc); R(6, -6, 4, 1, hc); R(6, -5, 2, 1, hi); R(5, -2, 6, 1, dk); base(); RR(3, 4, 3, 1, hc); break;
+      case 10: R(2, -2, 12, 1, hc); R(1, -1, 14, 6, hc); RR(0, 1, 3, 10, hc); RR(3, 5, 1, 1, hc);
+        for (let y = -2; y < 11; y++) for (let x = 0; x < 16; x++) if (get(x, y) === hc && (x * 3 + y * 5) % 7 === 0) R(x, y, 1, 1, dk);
+        R(5, -1, 3, 1, hi); break;
+      case 11: base(); R(3, 4, 6, 1, hc); R(3, 5, 2, 1, hc); R(12, 4, 1, 2, hc); RR(1, 4, 2, 14, hc); R(0, 7, 1, 3, hc); R(0, 13, 1, 3, hc); R(15, 9, 1, 3, hc); R(15, 15, 1, 2, hc); R(1, 10, 1, 1, dk); R(14, 12, 1, 1, dk); break;
+      case 12: { const sv = shade(hc, .45); RR(2, 2, 4, 2, sv); RR(2, 4, 1, 2, sv); R(6, -4, 4, 8, hc); R(7, -4, 1, 7, hi); } break;
+      case 13: base(); R(3, 4, 10, 2, hc); RR(1, 4, 2, 8, hc); RR(1, 11, 2, 1, dk); break;
+    } }
+
+  /* ── 모자 ── */
+  switch (cfg.hat) {
+    case 1: R(3, -1, 10, 1, htc); R(2, 0, 12, 3, htc); R(7, -1, 2, 1, shade(htc, .3)); R(1, 3, 14, 1, shade(htc, -.25)); break;
+    case 2: R(3, -2, 10, 1, htc); R(2, -1, 12, 4, htc); R(2, 3, 12, 2, shade(htc, -.2)); for (let x = 3; x < 13; x += 2) R(x, 3, 1, 2, shade(htc, -.35)); R(7, -4, 2, 2, W); break;
+    case 3: R(9, -1, 2, 3, htc); R(13, -1, 2, 3, htc); R(11, 0, 2, 1, shade(htc, -.3)); R(9, -1, 1, 1, shade(htc, .35)); break;
+    case 4: [2, 5, 8, 11].forEach((x, i) => { const col = ['#f7a8c4', '#ffffff', '#fff3a0', '#f48fb1'][i]; R(x, -1, 2, 2, col); R(x + (i % 2), -1 + (i % 2), 1, 1, '#f2c94c'); R(x + 2, 0, 1, 1, G); }); R(13, 1, 1, 1, G); break;
+    case 5: { const gd = '#f2c94c'; R(4, -2, 8, 3, gd); R(4, -4, 1, 2, gd); R(7, -4, 2, 2, gd); R(11, -4, 1, 2, gd); R(4, 0, 8, 1, '#c99a2a'); R(7, -1, 2, 1, '#e04848'); R(5, -1, 1, 1, '#4fb3c9'); R(10, -1, 1, 1, '#4fb3c9'); } break;
+    case 6: for (let k = 0; k < 5; k++) R(7 - k, -5 + k, 2 + 2 * k, 1, k % 2 ? W : htc); R(7, -7, 2, 2, '#f2c94c'); break;
+    case 7: RR(3, -1, 3, 1, htc); RR(3, -2, 2, 1, htc); RR(3, -3, 1, 1, htc); RR(4, -1, 1, 1, '#f2a0b8'); break;
+    case 8: R(3, -2, 10, 1, '#333'); RR(2, -1, 1, 2, '#333'); RR(1, 1, 1, 3, '#333'); RR(0, 4, 3, 5, htc); RR(0, 5, 1, 3, shade(htc, -.25)); break;
+    case 9: RR(4, -6, 2, 6, W); RR(5, -5, 1, 4, '#f2a0b8'); break;
+    case 10: R(11, 1, 3, 1, htc); R(12, 0, 1, 3, htc); R(12, 1, 1, 1, '#f2c94c'); break;
+    case 11: R(4, -4, 8, 4, htc); R(5, -4, 6, 1, shade(htc, .2)); R(7, -4, 2, 1, shade(htc, -.2)); R(4, -1, 8, 1, shade(htc, -.45)); R(1, 0, 14, 1, htc); break;
+  }
+
+  /* ── 팔 (포즈) ── */
+  const arm = (path, Rf) => { const n = path.length; path.forEach((p, i) => { const hand = i === n - 1; Rf(p[0], p[1], p[2], p[3], hand || sleeve === 'none' ? sk : sleeve === 'short' ? (i === 0 ? sl : sk) : sl); }); };
+  const pathOf = arr => arr[Math.min(pf, arr.length - 1)];
+  arm(pathOf(pose.r), R); arm(pathOf(pose.l), Rm);
+  if (pose.fx) pose.fx(R, sk);
+  if (o === 2) { if (pose.r === A_DOWN) R(12, 14, 1, 5, W); if (pose.l === A_DOWN) R(3, 14, 1, 5, W); }
+
+  /* ── 소품 (왼손) ── */
+  if (pose.l === A_DOWN) switch (cfg.item) {
+    case 1: R(3, 19, 1, 3, G); R(2, 20, 1, 2, G); R(4, 20, 1, 2, G); R(1, 15, 5, 4, '#f7a8c4'); R(2, 15, 1, 1, '#fff'); R(4, 16, 1, 1, '#fff3a0'); R(1, 17, 1, 1, '#fff'); R(3, 17, 1, 1, '#e05a8a'); R(5, 15, 1, 1, '#fff3a0'); R(2, 14, 3, 1, G); break;
+    case 2: ['.X.X.', 'XXXXX', 'XXXXX', '.XXX.', '..X..'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') R(-3 + i, 1 + j, 1, 1, pink); })); R(-2, 2, 1, 1, '#ff9aa8'); R(-1, 6, 1, 4, '#ddd'); R(0, 10, 1, 4, '#ddd'); R(1, 14, 1, 2, '#ddd'); R(2, 16, 1, 3, '#ddd'); break;
+    case 3: R(0, 18, 5, 4, '#e04848'); R(2, 18, 1, 4, '#f2c94c'); R(0, 19, 5, 1, '#f2c94c'); R(1, 17, 1, 1, '#f2c94c'); R(3, 17, 1, 1, '#f2c94c'); break;
+    case 4: R(2, 10, 1, 10, '#8a6a40'); R(-4, 3, 7, 7, '#fff'); [[-2, 5], [0, 5], [-3, 6], [-2, 6], [-1, 6], [0, 6], [1, 6], [-2, 7], [-1, 7], [0, 7], [-1, 8]].forEach(([a, b]) => R(a, b, 1, 1, pink)); break;
+    case 5: R(0, 17, 5, 3, '#3a3a40'); R(2, 18, 1, 1, '#7ab8d9'); R(1, 16, 1, 1, '#3a3a40'); R(4, 17, 1, 1, '#f2c94c'); break;
+    case 6: R(2, 20, 3, 1, '#d9a35b'); R(3, 21, 1, 2, '#d9a35b'); R(2, 17, 3, 3, '#f7a8c4'); R(3, 16, 1, 1, '#f7a8c4'); R(2, 17, 1, 1, '#ffd1dc'); R(4, 16, 1, 1, pink); break;
+    case 7: R(3, 16, 1, 4, '#555'); R(2, 11, 3, 5, '#ffe14d'); R(3, 12, 1, 3, '#fff8c0'); break;
+    case 8: R(1, 17, 3, 4, '#f5f5f5'); R(1, 18, 3, 1, '#8a6a40'); R(1, 16, 3, 1, '#3a3a40'); break;
+  }
+
+  /* ── 외곽선 ── */
+  const out = g.map(r => r.slice());
+  for (let y = 0; y < SPR_H; y++) for (let x = 0; x < SPR_W; x++) {
+    if (g[y][x]) continue;
+    if ((g[y - 1] && g[y - 1][x]) || (g[y + 1] && g[y + 1][x]) || g[y][x - 1] || g[y][x + 1]) out[y][x] = '#231f29';
+  }
+  return out;
+}
+const sprCache = new Map();
+function getSprite(cfg, frame = 0) {
+  const key = Object.keys(CFG_KEYS).map(k => cfg[k]).join('-') + '|' + frame;
+  let c = sprCache.get(key); if (c) return c;
+  if (sprCache.size > 4000) sprCache.clear();
+  c = document.createElement('canvas'); c.width = SPR_W; c.height = SPR_H;
+  const x = c.getContext('2d'), g = buildGrid(cfg, frame);
+  for (let y = 0; y < SPR_H; y++) for (let i = 0; i < SPR_W; i++) if (g[y][i]) { x.fillStyle = g[y][i]; x.fillRect(i, y, 1, 1); }
+  sprCache.set(key, c); return c;
+}
+const CROPS = { head: [5, 0, 16, 21], face: [7, 10, 12, 11] };
+function drawSpriteTo(cv, cfg, frame, scale, crop) {
+  const [sx, sy, sw, sh] = crop || [0, 0, SPR_W, SPR_H];
+  cv.width = sw * scale; cv.height = sh * scale;
+  const x = cv.getContext('2d'); x.imageSmoothingEnabled = false;
+  x.clearRect(0, 0, cv.width, cv.height); x.drawImage(getSprite(cfg, frame), sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+}
+
+/* ---------- 캐릭터 꾸미기 ---------- */
+const CATS = [
+  { label: '💇 머리', secs: [{ k: 'hair', t: '헤어스타일', names: HAIR_NAMES, crop: 'head' }, { k: 'hairC', t: '머리 색', colors: HAIRC }] },
+  { label: '😊 얼굴', secs: [{ k: 'eyes', t: '눈', names: EYES_NAMES, crop: 'face' }, { k: 'mouth', t: '입', names: MOUTH_NAMES, crop: 'face' }, { k: 'glasses', t: '안경', names: GLASSES_NAMES, crop: 'face' }, { k: 'extra', t: '얼굴 꾸미기', names: EXTRA_NAMES, crop: 'face' }, { k: 'skin', t: '피부색', colors: SKIN }] },
+  { label: '👕 옷', secs: [{ k: 'outfit', t: '옷', names: OUTFIT_NAMES }, { k: 'clothC', t: '상의 색', colors: CLOTHC }, { k: 'pantsC', t: '하의·치마 색', colors: PANTSC }] },
+  { label: '🎩 모자', secs: [{ k: 'hat', t: '모자·머리 장식', names: HAT_NAMES, crop: 'head' }, { k: 'hatC', t: '모자 색', colors: CLOTHC }] },
+  { label: '🙌 포즈·소품', secs: [{ k: 'pose', t: '포즈', names: POSE_NAMES }, { k: 'item', t: '손에 든 소품', names: ITEM_NAMES, note: '만세·머리 하트·박수·허리 손 포즈일 땐 걸어 다닐 때만 소품이 보여요' }] }
+];
+function mountBuilder(root, cfg) {
+  root.innerHTML = ''; root.classList.add('builder');
+  const prev = h('canvas', { class: 'pv' }), tabs = h('div', { class: 'tabs' }), body = h('div', { class: 'secs' });
+  let cur = 0, f = 0, walk = false;
+  const walkBtn = h('button', { class: 'btn ghost mini', onclick: () => { walk = !walk; walkBtn.textContent = walk ? '🙋 포즈 보기' : '🚶 걷기 보기'; drawPrev(); } }, '🚶 걷기 보기');
+  root.append(h('div', { class: 'pvwrap stick' }, prev, h('div', { class: 'minirow' }, h('button', { class: 'btn ghost mini', onclick: () => { Object.assign(cfg, randCfg()); render(); } }, '🎲 랜덤'), walkBtn)), tabs, body);
+  const drawPrev = () => drawSpriteTo(prev, cfg, walk ? [1, 0, 2, 0][f % 4] : (Math.floor(f / 2) % 2 ? 'p1' : 'p0'), 6);
+  const iv = setInterval(() => { if (!prev.isConnected) { clearInterval(iv); return; } f++; drawPrev(); }, 220);
+  const pick = (k, i) => { cfg[k] = i; if (k === 'item' && i && !poseShowsItem(cfg.pose)) toast('이 포즈에선 걸을 때 소품이 보여요'); render(); };
+  function render() {
+    tabs.innerHTML = '';
+    CATS.forEach((c, i) => tabs.append(h('button', { class: 'tab' + (i === cur ? ' on' : ''), onclick: () => { cur = i; render(); } }, c.label)));
+    body.style.minHeight = body.offsetHeight + 'px'; body.innerHTML = '';
+    CATS[cur].secs.forEach(s => {
+      const grid = h('div', { class: 'opts ' + (s.colors ? 'colors' : s.crop ? 'crops' : 'shapes') });
+      if (s.colors) s.colors.forEach((c, i) => grid.append(h('button', { class: 'sw' + (cfg[s.k] === i ? ' on' : ''), style: 'background:' + c, 'aria-label': s.t + ' ' + (i + 1), onclick: () => pick(s.k, i) })));
+      else s.names.forEach((nm, i) => {
+        const test = { ...cfg, [s.k]: i }; if (s.k === 'item') test.pose = 0;
+        const cv = h('canvas'); drawSpriteTo(cv, test, 'p0', s.crop === 'face' ? 4 : 3, s.crop ? CROPS[s.crop] : null);
+        grid.append(h('button', { class: 'op' + (cfg[s.k] === i ? ' on' : ''), onclick: () => pick(s.k, i) }, cv, h('span', {}, nm)));
+      });
+      body.append(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, s.t), s.note ? h('div', { class: 'sec-n' }, s.note) : null, grid));
+    });
+    body.style.minHeight = '';
+    drawPrev();
+  }
+  render();
+}
+function walker(getCfg, scale) {
+  const c = h('canvas'); let f = 0;
+  const draw = () => drawSpriteTo(c, getCfg(), Math.floor(f / 2) % 2 ? 'p1' : 'p0', scale); draw();
+  const iv = setInterval(() => { if (!c.isConnected) { clearInterval(iv); return; } f++; draw(); }, 220);
+  return c;
+}
+function openBuilder(cfg, onDone) {
+  const b = h('div'), sheet = h('div', { class: 'sheet' }), m = h('div', { class: 'modal' }, sheet);
+  sheet.append(h('h2', {}, '캐릭터 꾸미기'), b, h('button', { class: 'btn full', onclick: () => { m.remove(); onDone && onDone(); } }, '완료'));
+  document.body.append(m); mountBuilder(b, cfg);
+}
+
+/* ---------- 저장소 (Firebase / 체험 모드) ---------- */
+const DEFAULT_SETTINGS = { title: '우리들의 방명록', subtitle: '셀카 대신, 나만의 픽셀 캐릭터로 입장해요!', hosts: [{ name: '주인공', cfg: { skin: 1, hair: 1, hairC: 0, eyes: 1, mouth: 5, extra: 1, outfit: 0, clothC: 0, pose: 1 } }], showPanel: true, showQR: true, randomBubbles: true, bubbleSec: 8 };
+function fixSettings(raw) {
+  raw = raw || {}; const s = Object.assign({}, DEFAULT_SETTINGS, raw);
+  let hs = s.hosts; if (hs && !Array.isArray(hs)) hs = Object.values(hs);
+  if (raw.hostCount === 0) hs = [];
+  s.hosts = (hs || []).slice(0, 2).map(x => ({ name: String(x.name || '').slice(0, 10), cfg: normCfg(x.cfg) }));
+  s.bubbleSec = +s.bubbleSec || 8; return s;
+}
+const clampDir = v => Math.max(-1, Math.min(1, Math.round(+v || 0)));
+function cleanGuest(d) { const dir = d.dir || {}; return { id: d.id, name: String(d.name || '').slice(0, 10), msg: String(d.msg || '').slice(0, 40), cfg: normCfg(d.cfg), t: +d.t || 0, mt: +d.mt || +d.t || 0, dir: { dx: clampDir(dir.dx), dy: clampDir(dir.dy) } }; }
+const Store = {
+  fb: false, listeners: [],
+  async init() {
+    if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL) {
+      try {
+        await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+        await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+        firebase.initializeApp(FIREBASE_CONFIG); this.db = firebase.database(); this.fb = true; return;
+      } catch (e) { console.error(e); toast('Firebase 연결 실패 · 체험 모드로 실행'); }
+    }
+    this.bc = ('BroadcastChannel' in window) ? new BroadcastChannel('pixelguest_' + ROOM) : null;
+    if (this.bc) this.bc.onmessage = e => this._emit(e.data);
+  },
+  _key(k) { return 'pixelguest_' + ROOM + '_' + k; },
+  _get(k, d) { try { const v = localStorage.getItem(this._key(k)); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  _set(k, v) { try { localStorage.setItem(this._key(k), JSON.stringify(v)); } catch (e) { } },
+  _emit(m) { this.listeners.forEach(f => f(m)); },
+  _send(m) { this._emit(m); if (this.bc) this.bc.postMessage(m); },
+  ref(p) { return this.db.ref('pixelguestbook/rooms/' + ROOM + '/' + p); },
+  onSettings(cb) {
+    if (this.fb) { this.ref('settings').on('value', s => cb(fixSettings(s.val()))); return; }
+    cb(fixSettings(this._get('settings', null)));
+    this.listeners.push(m => { if (m.type === 'settings') cb(fixSettings(m.s)); });
+  },
+  saveSettings(s) { if (this.fb) return this.ref('settings').set(s); this._set('settings', s); this._send({ type: 'settings', s }); return Promise.resolve(); },
+  onGuests(added, removed, changed) {
+    changed = changed || (() => { });
+    if (this.fb) {
+      const r = this.ref('guests'), ok = v => v && v.name;
+      r.once('value').then(snap => {
+        const known = new Set();
+        snap.forEach(c => { if (!ok(c.val())) return; known.add(c.key); added(cleanGuest({ id: c.key, ...c.val() }), true); });
+        r.on('child_added', c => { if (known.has(c.key) || !ok(c.val())) return; known.add(c.key); added(cleanGuest({ id: c.key, ...c.val() }), false); });
+        r.on('child_changed', c => { if (!ok(c.val())) return; if (!known.has(c.key)) { known.add(c.key); added(cleanGuest({ id: c.key, ...c.val() }), false); } else changed(cleanGuest({ id: c.key, ...c.val() })); });
+        r.on('child_removed', c => { known.delete(c.key); removed(c.key); });
+      });
+      return;
+    }
+    const all = this._get('guests', {});
+    Object.keys(all).forEach(id => added(cleanGuest({ id, ...all[id] }), true));
+    this.listeners.push(m => {
+      if (m.type === 'add') added(cleanGuest(m.g), false);
+      else if (m.type === 'update') changed(cleanGuest(m.g));
+      else if (m.type === 'remove') removed(m.id);
+      else if (m.type === 'clear') m.ids.forEach(removed);
+    });
+  },
+  async updateGuest(id, patch) {
+    if (this.fb) return this.ref('guests/' + id).update(patch);
+    const all = this._get('guests', {}); if (!all[id]) throw new Error('gone');
+    Object.assign(all[id], patch); this._set('guests', all); this._send({ type: 'update', g: { id, ...all[id] } });
+  },
+  addGuest(g) {
+    const now = Date.now(), data = { name: g.name.slice(0, 10), msg: g.msg.slice(0, 40), cfg: normCfg(g.cfg), t: now, mt: now };
+    if (this.fb) { const r = this.ref('guests').push(); return r.set(data).then(() => r.key); }
+    const id = 'g' + now.toString(36) + Math.random().toString(36).slice(2, 6);
+    const all = this._get('guests', {}); all[id] = data; this._set('guests', all);
+    this._send({ type: 'add', g: { id, ...data } }); return Promise.resolve(id);
+  },
+  removeGuest(id) {
+    if (this.fb) return this.ref('guests/' + id).remove();
+    const all = this._get('guests', {}); delete all[id]; this._set('guests', all); this._send({ type: 'remove', id }); return Promise.resolve();
+  },
+  clearGuests() {
+    if (this.fb) return this.ref('guests').once('value').then(sn => { const u = {}; sn.forEach(c => { u[c.key] = null; }); return this.ref('guests').update(u); });
+    const all = this._get('guests', {}); this._set('guests', {}); this._send({ type: 'clear', ids: Object.keys(all) }); return Promise.resolve();
+  }
+};
+
+/* ---------- 배경 (꽃길 정원) ---------- */
+function makeBackground(W, H) {
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'), r = mulberry32(20261008);
+  const P = (px, py, col, w = 1, hh = 1) => { x.fillStyle = col; x.fillRect(Math.round(px), Math.round(py), w, hh); };
+  const FL = ['#ffffff', '#ffffff', '#f7a8c4', '#ffd1dc', '#fff3a0', '#f48fb1', '#ffb37a'];
+  const fc = () => FL[Math.floor(r() * FL.length)];
+  const flower = (fx, fy, col) => { fx = Math.round(fx); fy = Math.round(fy); P(fx + 1, fy + 2, '#4c8a2e'); P(fx, fy - 1, col); P(fx - 1, fy, col); P(fx + 1, fy, col); P(fx, fy + 1, col); P(fx, fy, '#f2c94c'); };
+  const lav = (lx, ly) => { lx = Math.round(lx); ly = Math.round(ly); P(lx, ly - 2, '#4c8a2e', 1, 4); P(lx, ly - 8, '#8e74d0', 1, 6); P(lx - 1, ly - 7, '#a993e2', 1, 3); P(lx + 1, ly - 6, '#7a62bf', 1, 2); };
+  const tree = (tx, ty, rad) => {
+    P(tx - 3, ty + rad - 6, '#6e4a2b', 7, 16); P(tx - 3, ty + rad - 6, '#57391f', 2, 16);
+    const blobs = [[0, -rad * .4, rad * .75], [-rad * .6, rad * .3, rad * .7], [rad * .6, rad * .3, rad * .7], [0, 0, rad]];
+    for (const [bx, by, br0] of blobs) { const br = Math.round(br0); for (let dy = -br; dy <= br; dy++) for (let dx = -br; dx <= br; dx++) if (dx * dx + dy * dy <= br * br) { const l = (dx + dy) / (br * 2); P(tx + bx + dx, ty + by + dy, l < -.35 ? '#5cb350' : l > .3 ? '#2c6e2e' : '#3f8f3c'); } }
+    for (let i = 0; i < 40; i++) P(tx + (r() - .5) * rad * 1.6, ty + (r() - .5) * rad * 1.4, '#6cc25e');
+  };
+  x.fillStyle = '#78b84a'; x.fillRect(0, 0, W, H);
+  const GS = ['#84c257', '#6ba63f', '#8fcb61', '#72ae45'];
+  for (let i = 0; i < 4000; i++) P(r() * W, r() * H, GS[i % 4]);
+  for (let i = 0; i < 300; i++) { const gx = r() * W, gy = r() * H; P(gx, gy, '#5e9a36'); P(gx + 1, gy - 1, '#5e9a36'); P(gx + 2, gy, '#5e9a36'); }
+  for (let yy = 44; yy <= 94; yy++) for (let xx = 166; xx <= 314; xx++) { const e = ((xx - 240) / 72) ** 2 + ((yy - 72) / 21) ** 2; if (e < 1) P(xx, yy, r() < .08 ? '#d9c896' : '#eadfb9'); }
+  for (let yy = 86; yy < H; yy++) { const w = Math.round(Math.sin(yy * .13) * 1.3); for (let xx = 213 + w; xx <= 267 - w; xx++) P(xx, yy, r() < .07 ? '#d9c896' : '#eadfb9'); }
+  tree(34, 34, 24); tree(448, 36, 24); tree(118, 12, 16); tree(364, 12, 16);
+  for (let i = 0; i < 90; i++) lav(i % 2 ? 8 + r() * 70 : W - 8 - r() * 70, 100 + r() * 165);
+  for (let i = 0; i < 170; i++) { const fx = r() * W, fy = 60 + r() * (H - 60); if (fx > 205 && fx < 275) continue; flower(fx, fy, fc()); }
+  for (let yy = 96; yy < H + 4; yy += 5) { flower(208 + r() * 3, yy + r() * 2, fc()); flower(270 + r() * 3, yy + r() * 2, fc()); if (r() < .5) { P(206 + r() * 4, yy + 3, '#4c8a2e', 2, 1); P(271 + r() * 4, yy + 3, '#4c8a2e', 2, 1); } }
+  // 꽃 아치
+  P(212, 72, '#efe7d3', 56, 2); P(208, 74, '#e2d8bf', 64, 2);
+  P(202, 26, '#cfc5ad', 6, 46); P(203, 26, '#f4efe4', 4, 46); P(272, 26, '#cfc5ad', 6, 46); P(273, 26, '#f4efe4', 4, 46);
+  for (let i = 0; i < 5; i++) { P(208 + i, 24 + i * 2, 'rgba(255,255,255,.7)', 1, 44 - i * 2); P(271 - i, 24 + i * 2, 'rgba(255,255,255,.7)', 1, 44 - i * 2); }
+  for (let a = 0; a <= Math.PI + .01; a += 0.09) { const ax = 240 + Math.cos(a) * 36, ay = 28 - Math.sin(a) * 22; P(ax - 2, ay - 1, '#3f8f3c', 5, 4); P(ax - 1, ay - 2, '#56a84c', 3, 1); }
+  for (let a = 0; a <= Math.PI + .01; a += 0.16) { const ax = 240 + Math.cos(a) * 36, ay = 28 - Math.sin(a) * 22; flower(ax + (r() - .5) * 3, ay + (r() - .5) * 2, fc()); }
+  for (let yy = 30; yy < 70; yy += 7) { P(200, yy, '#3f8f3c', 3, 4); flower(201, yy + 1, fc()); P(277, yy + 3, '#3f8f3c', 3, 4); flower(278, yy + 4, fc()); }
+  P(238, 9, '#e8c14a', 4, 4); P(239, 13, '#b8912a', 2, 1);
+  return c;
+}
+
+/* ---------- 큰 화면 ---------- */
+function startScreen() {
+  document.body.className = 'screen'; app.innerHTML = '';
+  const cv = h('canvas', { class: 'world' });
+  const qrInner = h('div', { class: 'qr' });
+  const qr = h('div', { class: 'qrbox' }, qrInner, h('div', { class: 'qrt' }, 'QR 찍고 입장!'));
+  const tt = h('span', { class: 'tt' }), cnt = h('span', { class: 'cnt' });
+  const fsBtn = h('button', { class: 'fsbtn', onclick: () => { const d = document.documentElement; if (!document.fullscreenElement && d.requestFullscreen) d.requestFullscreen(); else if (document.exitFullscreen) document.exitFullscreen(); } }, '⛶ 전체화면');
+  const stage = h('div', { class: 'stage' }, cv, qr, h('div', { class: 'titlebar' }, tt, cnt), fsBtn);
+  if (!Store.fb) stage.append(h('div', { class: 'demotag' }, '체험 모드'));
+  const cards = h('div', { class: 'cards' });
+  const panel = h('div', { class: 'panel' }, h('div', { class: 'panel-h' }, '💌 축하 메시지'), cards);
+  app.append(stage, panel);
+  try { new QRCode(qrInner, { text: urlFor('guest'), width: 256, height: 256, colorDark: '#1d1b22', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch (e) { qr.style.display = 'none'; }
+
+  const WW = 480, WH = 270, bg = makeBackground(WW, WH), ctx = cv.getContext('2d');
+  let S = 1, OX = 0, OY = 0, settings = fixSettings(null), hostEnts = [];
+  const guests = new Map(), cardList = [], hearts = [];
+  function resize() { const r = stage.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.max(1, Math.round(r.width * d)); cv.height = Math.max(1, Math.round(r.height * d)); S = Math.max(cv.width / WW, cv.height / WH); OX = (cv.width - WW * S) / 2; OY = (cv.height - WH * S) / 2; }
+  window.addEventListener('resize', resize); resize();
+  function vis() { return { x0: Math.max(14, -OX / S + 14), x1: Math.min(WW - 14, (cv.width - OX) / S - 14), y0: Math.max(96, -OY / S + 40), y1: Math.min(WH - 8, (cv.height - OY) / S - 8) }; }
+  function randTarget() { const v = vis(); return { x: v.x0 + Math.random() * (v.x1 - v.x0), y: v.y0 + Math.random() * (v.y1 - v.y0) }; }
+
+  Store.onSettings(s => {
+    settings = s; tt.textContent = s.title;
+    panel.style.display = s.showPanel ? 'flex' : 'none'; qr.style.display = s.showQR ? '' : 'none';
+    hostEnts = s.hosts.map((x, i) => ({ name: x.name, cfg: x.cfg, host: true, frame: 0, phase: i * .5, x: s.hosts.length === 2 ? (i ? 252 : 228) : 240, y: 74, bubbleUntil: 0 }));
+    resize();
+  });
+  const updateCount = () => { cnt.textContent = '하객 ' + guests.size + '명'; };
+  let crt; const schedCards = () => { clearTimeout(crt); crt = setTimeout(renderCards, 60); };
+  function renderCards() {
+    cards.innerHTML = ''; const now = Date.now();
+    cardList.slice(0, 14).forEach(m => { const live = guests.get(m.gid); const c = h('canvas'); drawSpriteTo(c, live ? live.cfg : m.cfg, 'p0', 3); cards.append(h('div', { class: 'card' + (now - m.addedAt < 1500 ? ' new' : '') }, c, h('div', {}, h('b', {}, live ? live.name : m.name), h('p', {}, m.msg)))); });
+  }
+  function addCard(g, fresh) {
+    cardList.push({ gid: g.id, name: g.name, cfg: g.cfg, msg: g.msg, t: g.mt, addedAt: fresh ? Date.now() : 0 });
+    cardList.sort((a, b) => b.t - a.t); if (cardList.length > 60) cardList.length = 60; schedCards();
+  }
+  Store.onGuests((d, initial) => {
+    if (guests.has(d.id)) return;
+    const g = { ...d, frame: 0, walk: 0, phase: Math.random() * 10, bubbleUntil: 0, dirAt: 0 };
+    if (initial) { const p = randTarget(); g.x = p.x; g.y = p.y; g.state = 'idle'; g.timer = Math.random() * 600; }
+    else { g.x = WW / 2 + (Math.random() * 20 - 10); g.y = WH + 34; g.tx = WW / 2 + (Math.random() * 24 - 12); g.ty = 102 + Math.random() * 12; g.state = 'enter'; g.bubbleUntil = Date.now() + settings.bubbleSec * 1000; }
+    guests.set(g.id, g); addCard(g, !initial); updateCount();
+  }, id => {
+    guests.delete(id); for (let i = cardList.length - 1; i >= 0; i--) if (cardList[i].gid === id) cardList.splice(i, 1);
+    schedCards(); updateCount();
+  }, d => {
+    const g = guests.get(d.id); if (!g) return;
+    g.cfg = d.cfg; g.name = d.name;
+    if (d.mt && d.mt !== g.mt) { g.mt = d.mt; g.msg = d.msg; g.bubbleUntil = Date.now() + settings.bubbleSec * 1000; addCard(g, true); }
+    const was = g.dir || { dx: 0, dy: 0 }; g.dir = d.dir; g.dirAt = Date.now();
+    if (d.dir.dx || d.dir.dy) g.state = 'ctrl';
+    else if (was.dx || was.dy) { if (g.state === 'ctrl') { g.state = 'idle'; g.timer = 900; } }
+    schedCards();
+  });
+  updateCount();
+
+  function step(g, dt) {
+    if (g.state === 'ctrl') {
+      const d = g.dir || { dx: 0, dy: 0 };
+      if ((!d.dx && !d.dy) || Date.now() - g.dirAt > 8000) { g.state = 'idle'; g.timer = 900; g.frame = 0; return; }
+      const len = Math.hypot(d.dx, d.dy), sp = .8 * dt, v = vis();
+      g.x = clamp(g.x + d.dx / len * sp, v.x0, v.x1); g.y = clamp(g.y + d.dy / len * sp, Math.max(58, v.y0 - 40), v.y1);
+      g.walk += dt; g.frame = [1, 0, 2, 0][Math.floor(g.walk / 6) % 4]; return;
+    }
+    if (g.state === 'enter' || g.state === 'roam' || g.state === 'wander') {
+      const dx = g.tx - g.x, dy = g.ty - g.y, d = Math.hypot(dx, dy), sp = (g.state === 'enter' ? .6 : .35) * dt;
+      if (d <= sp) { g.x = g.tx; g.y = g.ty; if (g.state === 'enter') { g.state = 'greet'; g.timer = 80; } else { g.state = 'idle'; g.timer = 300 + Math.random() * 900; } }
+      else { g.x += dx / d * sp; g.y += dy / d * sp; }
+      g.walk += dt; g.frame = [1, 0, 2, 0][Math.floor(g.walk / 7) % 4];
+    } else {
+      g.frame = 0; g.timer -= dt;
+      if (g.timer <= 0) {
+        if (g.state === 'greet') { const p = randTarget(); g.tx = p.x; g.ty = p.y; g.state = 'roam'; }
+        else { const v = vis(); g.tx = clamp(g.x + (Math.random() * 50 - 25), v.x0, v.x1); g.ty = clamp(g.y + (Math.random() * 30 - 15), v.y0, v.y1); g.state = 'wander'; }
+      }
+    }
+  }
+  const moving = e => e.state === 'enter' || e.state === 'roam' || e.state === 'wander' || e.state === 'ctrl';
+  const FONT = '"Galmuri11","Apple SD Gothic Neo",sans-serif';
+  function wrap(text, maxW) { const lines = []; let line = ''; for (const ch of [...text]) { if (ctx.measureText(line + ch).width > maxW && line) { lines.push(line); line = ch.trim() ? ch : ''; } else line += ch; } if (line) lines.push(line); return lines.slice(0, 4); }
+  function drawBubble(e) {
+    ctx.font = '6px ' + FONT; const lines = wrap(e.msg, 84), lh = 8;
+    const w = Math.ceil(Math.max(...lines.map(l => ctx.measureText(l).width))) + 10, hh = lines.length * lh + 5;
+    const ex = Math.round(e.x), v = { a: -OX / S + 2, b: (cv.width - OX) / S - 2 };
+    const bx = Math.round(clamp(ex - w / 2, v.a, v.b - w)), by = Math.round(e.y - 40 - hh);
+    ctx.fillStyle = '#1d1b22'; ctx.fillRect(bx - 1, by - 1, w + 2, hh + 2); ctx.fillRect(ex - 3, by + hh, 6, 2); ctx.fillRect(ex - 2, by + hh + 2, 4, 2);
+    ctx.fillStyle = '#fff'; ctx.fillRect(bx, by, w, hh); ctx.fillRect(ex - 2, by + hh, 4, 1); ctx.fillRect(ex - 1, by + hh + 1, 2, 2);
+    ctx.fillStyle = '#2a2630'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    lines.forEach((l, i) => ctx.fillText(l, bx + w / 2, by + 3 + i * lh));
+  }
+  const HEART = ['.X.X.', 'XXXXX', '.XXX.', '..X..'];
+  let last = performance.now(), nextRand = 0, nextHeart = 0, tick = 0;
+  function loop(t) {
+    const dt = Math.min(3, (t - last) / 16.67); last = t; tick += dt; const now = Date.now();
+    for (const g of guests.values()) step(g, dt);
+    if (settings.randomBubbles && now > nextRand) {
+      nextRand = now + 3500; const all = [...guests.values()];
+      if (all.filter(g => g.bubbleUntil > now).length < 4) { const c = all.filter(g => g.state === 'idle' && g.bubbleUntil < now && g.msg); if (c.length) c[ri(c.length)].bubbleUntil = now + 5000; }
+    }
+    if (hostEnts.length && now > nextHeart) { nextHeart = now + 900; const hx = hostEnts.reduce((a, e) => a + e.x, 0) / hostEnts.length; hearts.push({ x: hx + (Math.random() * 24 - 12), y: 40, life: 0, c: Math.random() < .5 ? '#ff6b9a' : '#ffa3c0' }); }
+    for (let i = hearts.length - 1; i >= 0; i--) { const p = hearts[i]; p.life += dt; p.y -= .22 * dt; p.x += Math.sin(p.life / 10) * .15; if (p.life > 150) hearts.splice(i, 1); }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#78b84a'; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.setTransform(S, 0, 0, S, OX, OY); ctx.imageSmoothingEnabled = false; ctx.drawImage(bg, 0, 0);
+    const ents = hostEnts.concat([...guests.values()]).sort((a, b) => a.y - b.y);
+    for (const e of ents) {
+      const mv = moving(e), pfr = Math.floor(tick / 24 + e.phase) % 2 ? 'p1' : 'p0';
+      let bob = 0;
+      if (e.state === 'greet') bob = -Math.round(Math.abs(Math.sin(e.timer / 7)) * 3);
+      else if (!mv && POSES[e.cfg.pose].hop) bob = pfr === 'p1' ? -2 : 0;
+      else if (!mv) bob = Math.floor(tick / 40 + e.phase) % 2 ? 1 : 0;
+      const ex = Math.round(e.x), ey = Math.round(e.y);
+      ctx.fillStyle = 'rgba(20,50,10,.25)'; ctx.fillRect(ex - 6, ey - 1, 12, 2);
+      ctx.drawImage(getSprite(e.cfg, mv ? e.frame : pfr), ex - 13, ey - 31 + bob);
+    }
+    for (const p of hearts) { ctx.fillStyle = p.c; HEART.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') ctx.fillRect(Math.round(p.x) + i, Math.round(p.y) + j, 1, 1); })); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1d1b22';
+    for (const e of ents) {
+      if (!e.name) continue;
+      ctx.font = (e.host ? '6px ' : '5px ') + FONT; ctx.lineWidth = e.host ? 2 : 1.5;
+      ctx.strokeText(e.name, Math.round(e.x), Math.round(e.y) + 1); ctx.fillStyle = e.host ? '#ffd257' : (e.state === 'ctrl' ? '#ffd257' : '#fff'); ctx.fillText(e.name, Math.round(e.x), Math.round(e.y) + 1);
+    }
+    for (const e of ents) if (e.bubbleUntil > now && e.msg) drawBubble(e);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  if (document.fonts) document.fonts.load('10px Galmuri11').catch(() => { });
+}
+
+/* ---------- 하객(폰) 화면 ---------- */
+function startGuest() {
+  document.body.className = 'mobile';
+  const ME_KEY = 'pixelguest_' + ROOM + '_me';
+  const loadMe = () => { try { return JSON.parse(localStorage.getItem(ME_KEY) || 'null'); } catch (e) { return null; } };
+  const saveMe = v => { try { v ? localStorage.setItem(ME_KEY, JSON.stringify(v)) : localStorage.removeItem(ME_KEY); } catch (e) { } };
+  let settings = fixSettings(null), cfg = randCfg(), name = '', msg = '', myId = null;
+  const saved = loadMe();
+  if (saved && saved.id) { myId = saved.id; name = saved.name || ''; cfg = normCfg(saved.cfg); }
+  const wrap = h('div', { class: 'phone' }); app.innerHTML = ''; app.append(wrap);
+  Store.onSettings(s => { settings = s; wrap.querySelectorAll('.g-t').forEach(e => e.textContent = s.title); wrap.querySelectorAll('.g-s').forEach(e => e.textContent = s.subtitle); });
+  const W = sc => walker(() => cfg, sc);
+  function intro() {
+    wrap.innerHTML = ''; const w = W(6); w.className = 'pv';
+    wrap.append(h('div', { class: 'g-title g-t', style: 'margin-top:20px' }, settings.title), h('div', { class: 'g-sub g-s' }, settings.subtitle),
+      h('div', { class: 'pvwrap', style: 'margin:10px 0' }, w, h('div', { class: 'g-sub' }, '① 캐릭터 꾸미기 → ② 축하 한마디 → ③ 큰 화면에서 움직이며 대화!')),
+      myId ? h('button', { class: 'btn full', onclick: play }, '🎮 ' + name + ' 캐릭터로 돌아가기') : null,
+      h('button', { class: 'btn full' + (myId ? ' ghost' : ''), onclick: () => { if (myId) { myId = null; saveMe(null); cfg = randCfg(); name = ''; } build(); } }, myId ? '새 캐릭터로 입장하기' : '캐릭터 만들기 →'));
+  }
+  function build() {
+    wrap.innerHTML = ''; const b = h('div');
+    wrap.append(h('div', { class: 'g-title' }, '나랑 닮게 꾸며요'), b, h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: intro }, '← 처음'), h('button', { class: 'btn', onclick: write }, '다음 →')));
+    mountBuilder(b, cfg);
+  }
+  function write() {
+    wrap.innerHTML = ''; const w = W(4); w.style.cssText = 'height:128px;width:auto';
+    const ni = h('input', { class: 'in', maxlength: '10', placeholder: '이름 (예: 김하늘)' }); ni.value = name;
+    const mi = h('textarea', { class: 'in', maxlength: '40', placeholder: '첫 인사를 남겨주세요' }); mi.value = msg;
+    const cnt = h('div', { class: 'cnt-hint' }, msg.length + '/40'); mi.addEventListener('input', () => { cnt.textContent = mi.value.length + '/40'; });
+    const go = h('button', { class: 'btn' }, '입장하기 🎉');
+    go.onclick = async () => {
+      name = ni.value.trim(); msg = mi.value.trim();
+      if (!name) { ni.focus(); toast('이름을 적어주세요'); return; }
+      if (!msg) { mi.focus(); toast('한마디를 적어주세요'); return; }
+      go.disabled = true; go.textContent = '입장 중...';
+      try { myId = await Store.addGuest({ name, msg, cfg: { ...cfg } }); saveMe({ id: myId, name, cfg }); play(); }
+      catch (e) { go.disabled = false; go.textContent = '입장하기 🎉'; toast('전송 실패, 다시 눌러주세요'); }
+    };
+    wrap.append(h('div', { class: 'g-title' }, '첫 인사'), h('div', { class: 'center' }, w), h('label', { class: 'f' }, '이름', ni), h('label', { class: 'f' }, '메시지', mi, cnt),
+      h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: () => { name = ni.value; msg = mi.value; build(); } }, '← 꾸미기'), go));
+  }
+  /* 조종기: 조이스틱 + 말하기 + 포즈 */
+  function play() {
+    wrap.innerHTML = '';
+    const gone = () => { toast('캐릭터가 삭제됐어요. 다시 입장해 주세요'); myId = null; saveMe(null); intro(); };
+    const push = patch => Store.updateGuest(myId, patch).catch(e => { if (String(e.message) === 'gone') gone(); });
+    const syncCfg = () => { saveMe({ id: myId, name, cfg }); push({ cfg: normCfg(cfg) }); };
+    const me = W(4);
+    // 조이스틱
+    const knob = h('div', { class: 'knob' }), pad = h('div', { class: 'joy' }, knob);
+    let cur = '0,0', hb = null, pid = null;
+    const send = (dx, dy) => { const k = dx + ',' + dy; if (k === cur) return; cur = k; push({ dir: { dx, dy }, dt: Date.now() }); clearInterval(hb); if (dx || dy) hb = setInterval(() => push({ dir: { dx, dy }, dt: Date.now() }), 3000); };
+    const moveTo = ev => {
+      const r = pad.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      let x = ev.clientX - cx, y = ev.clientY - cy; const d = Math.hypot(x, y), max = r.width / 2 - 36;
+      if (d > max) { x = x / d * max; y = y / d * max; }
+      knob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+      if (d < 18) return send(0, 0);
+      const a = Math.round(Math.atan2(y, x) / (Math.PI / 4)) * (Math.PI / 4);
+      send(Math.round(Math.cos(a)), Math.round(Math.sin(a)));
+    };
+    const release = () => { pid = null; knob.style.transform = ''; send(0, 0); };
+    pad.addEventListener('pointerdown', e => { pid = e.pointerId; pad.setPointerCapture(pid); moveTo(e); e.preventDefault(); });
+    pad.addEventListener('pointermove', e => { if (e.pointerId === pid) moveTo(e); });
+    pad.addEventListener('pointerup', release); pad.addEventListener('pointercancel', release);
+    // 말하기
+    const mi = h('input', { class: 'in', maxlength: '40', placeholder: '하고 싶은 말을 써 보세요', enterkeyhint: 'send' });
+    let lastSend = 0;
+    const say = async () => {
+      const t = mi.value.trim(); if (!t) { mi.focus(); return; }
+      if (Date.now() - lastSend < 1500) { toast('조금만 천천히요 🙂'); return; }
+      lastSend = Date.now(); mi.value = '';
+      await push({ msg: t.slice(0, 40), mt: Date.now() }); toast('큰 화면에 말풍선이 떴어요!');
+    };
+    mi.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); say(); } });
+    const quick = ['축하해요! 🎉', '사랑해요 💛', '안녕하세요~', '대박 👍', 'ㅋㅋㅋㅋ'];
+    // 포즈
+    const chips = h('div', { class: 'chips' });
+    const drawChips = () => { chips.innerHTML = ''; POSE_NAMES.forEach((nm, i) => chips.append(h('button', { class: 'chip' + (cfg.pose === i ? ' on' : ''), onclick: () => { cfg.pose = i; drawChips(); syncCfg(); } }, nm))); };
+    drawChips();
+    wrap.append(
+      h('div', { class: 'me' }, me, h('div', {}, h('div', { class: 'g-title', style: 'text-align:left;font-size:20px' }, name), h('div', { class: 'g-sub', style: 'text-align:left' }, '큰 화면에서 내 이름이 노랗게 빛나요'))),
+      h('div', { class: 'box' }, h('h2', {}, '🕹 움직이기'), pad, h('div', { class: 'g-sub' }, '노란 버튼을 끌어서 걸어 다녀요')),
+      h('div', { class: 'box' }, h('h2', {}, '💬 말하기'), h('div', { class: 'sendrow' }, mi, h('button', { class: 'btn', onclick: say }, '보내기')),
+        h('div', { class: 'chips' }, quick.map(q => h('button', { class: 'chip', onclick: () => { mi.value = q; say(); } }, q)))),
+      h('div', { class: 'box' }, h('h2', {}, '🙌 포즈 바꾸기'), chips),
+      h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: () => openBuilder(cfg, () => { drawChips(); syncCfg(); }) }, '👕 다시 꾸미기'), h('button', { class: 'btn ghost', onclick: intro }, '처음 화면'))
+    );
+  }
+  myId ? play() : intro();
+}
+
+/* ---------- 관리자 ---------- */
+function startAdmin() {
+  if (ADMIN_PIN) {
+    let ok = false; try { ok = sessionStorage.getItem('pg_pin') === ADMIN_PIN; } catch (e) { }
+    if (!ok) { const p = prompt('관리자 PIN'); if (p !== ADMIN_PIN) { app.textContent = 'PIN이 맞지 않아요'; return; } try { sessionStorage.setItem('pg_pin', p); } catch (e) { } }
+  }
+  document.body.className = 'mobile';
+  const wrap = h('div', { class: 'phone wide' }); app.innerHTML = ''; app.append(wrap);
+  let settings = fixSettings(null), loaded = false, hosts = [];
+  const f = {
+    title: h('input', { class: 'in', maxlength: '30' }), subtitle: h('input', { class: 'in', maxlength: '40' }),
+    bubbleSec: h('select', { class: 'in' }, [5, 8, 12, 20].map(n => h('option', { value: String(n) }, n + '초'))),
+    hostCount: h('select', { class: 'in' }, h('option', { value: '0' }, '없음'), h('option', { value: '1' }, '1명'), h('option', { value: '2' }, '2명')),
+    showPanel: h('input', { type: 'checkbox' }), showQR: h('input', { type: 'checkbox' }), randomBubbles: h('input', { type: 'checkbox' })
+  };
+  const hostBox = h('div', { class: 'list' });
+  function renderHosts() {
+    const n = +f.hostCount.value;
+    while (hosts.length < n) hosts.push({ name: hosts.length ? '주인공2' : '주인공', cfg: randCfg() });
+    hosts.length = n; hostBox.innerHTML = '';
+    hosts.forEach(ho => {
+      const cv = h('canvas', { style: 'height:90px;width:auto' }); drawSpriteTo(cv, ho.cfg, 'p0', 3);
+      const ni = h('input', { class: 'in', maxlength: '10', placeholder: '이름' }); ni.value = ho.name; ni.oninput = () => ho.name = ni.value;
+      hostBox.append(h('div', { class: 'li' }, cv, h('div', { class: 'tx' }, ni), h('button', { class: 'btn ghost', style: 'padding:10px 12px;font-size:14px', onclick: () => openBuilder(ho.cfg, () => drawSpriteTo(cv, ho.cfg, 'p0', 3)) }, '꾸미기')));
+    });
+  }
+  f.hostCount.onchange = renderHosts;
+  Store.onSettings(s => {
+    settings = s; if (loaded) return; loaded = true;
+    f.title.value = s.title; f.subtitle.value = s.subtitle; f.bubbleSec.value = String(s.bubbleSec);
+    f.showPanel.checked = s.showPanel; f.showQR.checked = s.showQR; f.randomBubbles.checked = s.randomBubbles;
+    hosts = s.hosts.map(x => ({ name: x.name, cfg: { ...x.cfg } })); f.hostCount.value = String(hosts.length); renderHosts();
+  });
+  const save = h('button', { class: 'btn full' }, '설정 저장');
+  save.onclick = async () => {
+    const s = { title: f.title.value.trim() || DEFAULT_SETTINGS.title, subtitle: f.subtitle.value.trim(), hostCount: hosts.length, hosts: hosts.map(x => ({ name: x.name.trim(), cfg: normCfg(x.cfg) })), showPanel: f.showPanel.checked, showQR: f.showQR.checked, randomBubbles: f.randomBubbles.checked, bubbleSec: +f.bubbleSec.value || 8 };
+    save.disabled = true;
+    try { await Store.saveSettings(s); toast('저장했어요 · 큰 화면에 바로 반영돼요'); } catch (e) { toast('저장 실패: ' + e.message); }
+    save.disabled = false;
+  };
+  const copy = u => { (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => toast('주소를 복사했어요')).catch(() => prompt('복사해서 쓰세요', u)); };
+  const gmap = new Map(), list = h('div', { class: 'list' }), cntEl = h('span', {}, '0');
+  function renderList() {
+    list.innerHTML = ''; const arr = [...gmap.values()].sort((a, b) => (b.t || 0) - (a.t || 0)); cntEl.textContent = arr.length;
+    if (!arr.length) list.append(h('div', { class: 'g-sub', style: 'text-align:left' }, '아직 입장한 하객이 없어요'));
+    arr.forEach(g => { const cv = h('canvas'); drawSpriteTo(cv, g.cfg, 'p0', 2); list.append(h('div', { class: 'li' }, cv, h('div', { class: 'tx' }, h('b', {}, g.name), h('p', {}, g.msg)), h('button', { class: 'btn ghost', style: 'padding:8px 12px;font-size:13px', onclick: () => { if (confirm(g.name + '님의 캐릭터를 삭제할까요?')) Store.removeGuest(g.id); } }, '삭제'))); });
+  }
+  let rt; const sched = () => { clearTimeout(rt); rt = setTimeout(renderList, 80); };
+  Store.onGuests(g => { gmap.set(g.id, g); sched(); }, id => { gmap.delete(id); sched(); }, g => { gmap.set(g.id, g); sched(); });
+  renderList();
+  const NAMES = ['김하늘', '이서준', '박지민', '최유나', '정민호', '강다은', '조현우', '윤서아', '장도윤', '임하린', '한지호', '오세린', '서예준', '신수아', '권태오', '황보람', '안채원', '송민재', '류지후', '홍나리'];
+  const MSGS = ['축하해요!!', '오늘 너무 멋져요 ✨', '행복하게 오래오래~', '와 이거 진짜 신기하다 ㅋㅋ', '최고의 하루 되세요', '사랑해요 💛', '캐릭터 나랑 똑같음', '초대해줘서 고마워요', '앞날을 응원합니다!', '꽃길만 걷자 🌸'];
+  const testBtn = h('button', { class: 'btn ghost' }, '테스트 하객 20명');
+  testBtn.onclick = async () => { testBtn.disabled = true; for (let i = 0; i < 20; i++) { await Store.addGuest({ name: NAMES[i], msg: MSGS[ri(MSGS.length)], cfg: randCfg() }); await sleep(400); } testBtn.disabled = false; };
+  const clearBtn = h('button', { class: 'btn danger', onclick: () => { if (confirm('모든 하객 캐릭터를 지울까요? 되돌릴 수 없어요.')) Store.clearGuests(); } }, '전체 삭제');
+  const linkRow = (label, u, btn) => h('div', {}, h('b', {}, label), h('div', { class: 'url', style: 'margin:4px 0 8px' }, u), btn);
+  wrap.append(
+    h('h2', {}, '⚙️ 픽셀 방명록 관리자 · 방 [' + ROOM + ']'),
+    Store.fb ? null : h('div', { class: 'note' }, '체험 모드예요. 이 브라우저 안에서만 동작하니, 같은 브라우저의 다른 탭에 큰 화면과 하객 화면을 열어 테스트해 보세요. 실제 행사에서는 코드 상단의 FIREBASE_CONFIG를 채워 주세요.'),
+    h('div', { class: 'box' },
+      linkRow('🖥 큰 화면 (TV·빔프로젝터)', urlFor('screen'), h('button', { class: 'btn ghost full', onclick: () => window.open(urlFor('screen'), '_blank') }, '큰 화면 열기')),
+      linkRow('📱 하객 입장 주소 (큰 화면 QR과 같음)', urlFor('guest'), h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: () => copy(urlFor('guest')) }, '주소 복사'), h('button', { class: 'btn ghost', onclick: () => window.open(urlFor('guest'), '_blank') }, '열어보기')))),
+    h('div', { class: 'box' }, h('h2', {}, '행사 설정'),
+      h('label', { class: 'f' }, '행사 제목 (큰 화면 하단)', f.title),
+      h('label', { class: 'f' }, '하객 화면 안내 문구', f.subtitle),
+      h('label', { class: 'f' }, '꽃 아치 아래 주인공', f.hostCount), hostBox,
+      h('label', { class: 'tog' }, '오른쪽 메시지 패널', f.showPanel),
+      h('label', { class: 'tog' }, 'QR 코드 표시', f.showQR),
+      h('label', { class: 'tog' }, '랜덤 말풍선 (입장한 하객 메시지 다시 보여주기)', f.randomBubbles),
+      h('label', { class: 'f' }, '입장 말풍선 유지 시간', f.bubbleSec), save),
+    h('div', { class: 'box' }, h('h2', {}, '하객 ', cntEl, '명'), h('div', { class: 'row' }, testBtn, clearBtn), list)
+  );
+}
+
+/* ---------- 첫 화면 ---------- */
+function startHome() {
+  document.body.className = 'mobile';
+  const wrap = h('div', { class: 'phone' }); app.innerHTML = ''; app.append(wrap);
+  const ri2 = h('input', { class: 'in', maxlength: '30' }); ri2.value = ROOM;
+  const go = m => { const r = (ri2.value || 'main').replace(/[^a-zA-Z0-9_-]/g, '') || 'main'; location.href = location.pathname + '?room=' + r + '&mode=' + m; };
+  const c = randCfg(); const w = walker(() => c, 6); w.className = 'pv';
+  wrap.append(
+    h('div', { class: 'g-title', style: 'margin-top:24px' }, '픽셀 방명록'),
+    h('div', { class: 'g-sub' }, '하객이 픽셀 캐릭터가 되어 꽃길로 입장하는 실시간 방명록'),
+    h('div', { class: 'pvwrap' }, w),
+    h('label', { class: 'f' }, '방 이름 (행사마다 다르게 · 영문/숫자)', ri2),
+    h('button', { class: 'btn full', onclick: () => go('screen') }, '🖥 큰 화면 열기'),
+    h('button', { class: 'btn ghost full', onclick: () => go('guest') }, '📱 하객 입장 화면'),
+    h('button', { class: 'btn ghost full', onclick: () => go('admin') }, '⚙️ 관리자'),
+    Store.fb ? null : h('div', { class: 'note' }, '지금은 체험 모드예요. 같은 브라우저에서 탭을 나눠 테스트할 수 있어요.'),
+    h('div', { class: 'foot' }, '© 에듀테크리더스 · edu@eduleader.kr')
+  );
+}
+
+(async () => {
+  await Store.init();
+  if (MODE === 'screen') startScreen();
+  else if (MODE === 'guest') startGuest();
+  else if (MODE === 'admin') startAdmin();
+  else startHome();
+})();
+</script>
+</body>
+</html>
