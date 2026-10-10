@@ -148,31 +148,32 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.append(s); }); }
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
-/* ---------- 이끼 정령 캐릭터 (오리지널) ---------- */
-const MOSS = ['#7fb24a', '#5a9a3c', '#3f7f3a', '#4f9a7a', '#a8b83c', '#c9a64a', '#9a7fc0', '#d98a7a'];
+/* ---------- 눈사람 캐릭터 (오리지널) ---------- */
+const SNOW = ['#ffffff', '#f2f6fb', '#e4f0ff', '#fff0ec', '#eafaf0', '#f1ecfc'];
 const ACCC = ['#e0505a', '#f2a0b8', '#f2c94c', '#4f8fd9', '#8e5bc9', '#ffffff', '#2b2b2b', '#e8833a', '#3fae8a'];
 const NAMES = {
-  head: { en: ['Round', 'Wide', 'Long', 'Drop', 'Square'], ko: ['동그란', '넓적한', '길쭉한', '물방울', '네모난'] },
-  eyes: { en: ['Tiny', 'Normal', 'Big', 'Huge', 'Smiley', 'Sleepy'], ko: ['콩알', '보통', '큰 눈', '왕눈', '웃는 눈', '감은 눈'] },
-  mouth: { en: ['Smile', 'Grin', 'Oh!', 'Flat', 'Tongue'], ko: ['미소', '활짝', '오!', '일자', '메롱'] },
+  head: { en: ['Round', 'Wide', 'Long', 'Small', 'Big'], ko: ['동그란', '넓적한', '길쭉한', '작은', '큰'] },
+  eyes: { en: ['Tiny', 'Coal', 'Big', 'Sparkly', 'Smiley', 'Sleepy'], ko: ['콩알', '석탄 눈', '큰 눈', '반짝 눈', '웃는 눈', '감은 눈'] },
+  nose: { en: ['Carrot', 'Long carrot', 'Button', 'None'], ko: ['당근', '긴 당근', '단추 코', '없음'] },
+  mouth: { en: ['Coal smile', 'Grin', 'Oh!', 'Flat', 'Tongue'], ko: ['석탄 미소', '활짝', '오!', '일자', '메롱'] },
   cheek: { en: ['None', 'Blush', 'Freckles'], ko: ['없음', '볼터치', '주근깨'] },
-  build: { en: ['Slim', 'Regular', 'Chubby', 'Round'], ko: ['날씬', '보통', '통통', '뚱뚱'] },
+  build: { en: ['Slim', 'Regular', 'Chubby', 'Big & round'], ko: ['날씬', '보통', '통통', '뚱뚱'] },
   height: { en: ['Short', 'Medium', 'Tall'], ko: ['작게', '보통', '크게'] },
   pose: { en: ['Stand', 'Sit', 'Wave', 'Hooray', 'Jump'], ko: ['서기', '앉기', '손 인사', '만세', '폴짝'] },
-  headw: { en: ['None', 'Sprout', 'Clover', 'Flower', 'Ribbon', 'Straw hat', 'Acorn cap', 'Mushroom cap', 'Crown', 'Beanie'], ko: ['없음', '새싹', '클로버', '꽃', '리본', '밀짚모자', '도토리 모자', '버섯 모자', '왕관', '비니'] },
+  headw: { en: ['None', 'Top hat', 'Beanie', 'Earmuffs', 'Ribbon', 'Straw hat', 'Bucket', 'Flower', 'Crown', 'Santa hat'], ko: ['없음', '중절모', '비니', '귀마개', '리본', '밀짚모자', '양동이', '꽃', '왕관', '산타 모자'] },
   glasses: { en: ['None', 'Round', 'Square', 'Shades', 'Hearts'], ko: ['없음', '동그란 안경', '네모 안경', '선글라스', '하트 안경'] },
-  neck: { en: ['None', 'Bow tie', 'Scarf', 'Lei'], ko: ['없음', '나비넥타이', '목도리', '꽃목걸이'] },
-  item: { en: ['None', 'Lantern', 'Flower', 'Heart', 'Acorn'], ko: ['없음', '등불', '꽃 한 송이', '하트', '도토리'] }
+  neck: { en: ['None', 'Scarf', 'Bow tie', 'Long scarf'], ko: ['없음', '목도리', '나비넥타이', '긴 목도리'] },
+  item: { en: ['None', 'Lantern', 'Flower', 'Heart', 'Pinecone'], ko: ['없음', '등불', '꽃 한 송이', '하트', '솔방울'] }
 };
-const CFG_KEYS = { color: MOSS.length, build: 4, height: 3, head: 5, eyes: 6, mouth: 5, cheek: 3, headw: 10, accC: ACCC.length, glasses: 5, neck: 4, pose: 5, item: 5 };
+const CFG_KEYS = { color: SNOW.length, build: 4, height: 3, head: 5, eyes: 6, nose: 4, mouth: 5, cheek: 3, headw: 10, accC: ACCC.length, glasses: 5, neck: 4, pose: 5, item: 5 };
 const SPR_W = 40, SPR_H = 52, CX = 20, FY = 49;
 const ri = n => Math.floor(Math.random() * n);
 const clampI = (v, n, d = 0) => { v = +v; return Number.isInteger(v) && v >= 0 && v < n ? v : d; };
-const CFG_DEFAULT = { color: 0, build: 1, height: 1, head: 0, eyes: 1, mouth: 0, cheek: 1, headw: 1, accC: 0, glasses: 0, neck: 0, pose: 0, item: 0 };
+const CFG_DEFAULT = { color: 0, build: 1, height: 1, head: 0, eyes: 1, nose: 0, mouth: 0, cheek: 1, headw: 0, accC: 0, glasses: 0, neck: 1, pose: 0, item: 0 };
 function normCfg(c) { c = c || {}; const o = {}; for (const k in CFG_KEYS) o[k] = clampI(c[k], CFG_KEYS[k], CFG_DEFAULT[k]); return o; }
 function randCfg() {
   const m = (n, p) => Math.random() < p ? 1 + ri(n - 1) : 0, K = CFG_KEYS;
-  return { color: ri(K.color), build: ri(K.build), height: ri(K.height), head: ri(K.head), eyes: ri(K.eyes), mouth: ri(K.mouth), cheek: ri(K.cheek), headw: m(K.headw, .7), accC: ri(K.accC), glasses: m(K.glasses, .25), neck: m(K.neck, .3), pose: ri(K.pose), item: m(K.item, .3) };
+  return { color: Math.random() < .6 ? 0 : ri(K.color), build: Math.random() < .75 ? ri(2) : 2 + ri(2), height: 1 + ri(2), head: ri(K.head), eyes: ri(K.eyes), nose: Math.random() < .7 ? 0 : ri(K.nose), mouth: ri(K.mouth), cheek: ri(K.cheek), headw: m(K.headw, .75), accC: ri(K.accC), glasses: m(K.glasses, .2), neck: m(K.neck, .7), pose: ri(K.pose), item: m(K.item, .3) };
 }
 function shade(hex, a) {
   const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = n >> 8 & 255, b = n & 255;
@@ -190,137 +191,135 @@ function buildSprite(cfg, frame) {
   const set = (x, y, c) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && x < SPR_W && y >= 0 && y < SPR_H) g[y][x] = c; };
   const R = (x, y, w, h, c) => { x = Math.round(x); y = Math.round(y); for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) set(x + i, y + j, c); };
   const hash = (x, y) => { let n = (x * 374761393 + y * 668265263) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; };
-  const shape = (cx, cy, rx, ry, col, p = 2, cutY = 1e9) => {
+  const ell = (cx, cy, rx, ry, col, cutY = 1e9) => {
     for (let y = Math.floor(cy - ry - 1); y <= Math.ceil(cy + ry + 1); y++) for (let x = Math.floor(cx - rx - 1); x <= Math.ceil(cx + rx + 1); x++) {
       if (y > cutY) continue;
-      const d = Math.abs((x - cx) / rx) ** p + Math.abs((y - cy) / ry) ** p;
-      if (d <= 1) set(x, y, typeof col === 'function' ? col(x, y) : col);
+      if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1) set(x, y, typeof col === 'function' ? col(x, y) : col);
     }
   };
-  const ell = (cx, cy, rx, ry, col, cutY) => shape(cx, cy, rx, ry, col, 2, cutY);
-  const base = MOSS[cfg.color], lt = shade(base, .25), dk = shade(base, -.22), acc = ACCC[cfg.accC];
-  const mossFn = (cx, cy, rx, ry) => (x, y) => {
-    const h = hash(x, y), l = -((x - cx) / rx) * .5 - ((y - cy) / ry) * .8;
-    if (h < .1) return lt; if (h > .9) return dk;
-    return l > .55 ? lt : l < -.6 ? dk : base;
+  const base = SNOW[cfg.color], mid = shade(base, -.06), sh = shade(base, -.16), acc = ACCC[cfg.accC];
+  const snowFn = (cx, cy, rx, ry) => (x, y) => {
+    const l = -((x - cx) / rx) * .55 - ((y - cy) / ry) * .8;
+    if (hash(x, y) < .04) return '#ffffff';
+    return l > .2 ? base : l < -.65 ? sh : mid;
   };
   const walking = typeof frame === 'number', pf = frame === 'p1' ? 1 : 0;
   const P = POSES[walking ? 0 : cfg.pose], sit = !!P.sit;
-  const wf = [.72, 1, 1.3, 1.6][cfg.build], hf = [.8, 1, 1.25][cfg.height];
-  const legH = sit ? 0 : Math.round(3 * hf);
-  const bRx = 4.6 * wf, bRy = 4.4 * hf;
-  const bCy = FY - legH - bRy + (sit ? .5 : 0);
-  let [hRx, hRy] = [[7, 7], [8.6, 6.2], [6.2, 8.4], [7, 7], [7, 6.8]][cfg.head];
-  const hs = 1 + (wf - 1) * .22; hRx *= hs; hRy *= hs;
-  const hCy = bCy - bRy - hRy + 3;
+  const wf = [.58, .8, 1.08, 1.42][cfg.build], hf = [.82, 1, 1.22][cfg.height];
+  const legH = sit ? 0 : Math.round(2.5 * hf);
+  const bRx = 5.6 * wf, bRy = 5.2 * hf;
+  const bCy = FY - legH - bRy - 1 + (sit ? 1 : 0);
+  let [hRx, hRy] = [[6.2, 6], [7.4, 5.4], [5.5, 6.9], [5.2, 5], [7.2, 7]][cfg.head];
+  const hs = 1 + (wf - .78) * .25; hRx *= hs * .92; hRy *= hs;
+  const hCy = bCy - bRy - hRy + 2.5;
   const lU = frame === 1 ? 1 : 0, rU = frame === 2 ? 1 : 0;
-  const dark = '#1d1b20', W = '#fbfbf5', armC = shade(base, -.12);
+  const coal = '#2a2830', W = '#ffffff', twig = '#6b4a2b', boot = '#5a4030';
 
-  /* 다리 */
+  /* 다리·부츠 */
   if (!sit) {
-    const lx = CX - Math.max(2, bRx * .45) - 1, rx = CX + Math.max(2, bRx * .45) - 1;
-    R(lx, bCy + bRy - 1 - lU, 3, legH + 1, dk); R(lx, FY - lU, 3, 1, shade(base, -.4));
-    R(rx, bCy + bRy - 1 - rU, 3, legH + 1, dk); R(rx, FY - rU, 3, 1, shade(base, -.4));
+    const off = Math.max(2.5, bRx * .45);
+    [[-1, lU], [1, rU]].forEach(([s, up]) => { const lx = CX + s * off - 1.5; R(lx, bCy + bRy - 2 - up, 3, legH + 2, mid); ell(lx + 1.5 + s * .5, FY - .5 - up, 2.2, 1.3, boot); });
   } else {
-    ell(CX - bRx * .55, FY - .5, 2.4, 1.5, dk); ell(CX + bRx * .55, FY - .5, 2.4, 1.5, dk);
+    ell(CX - bRx * .55, FY - .5, 2.3, 1.4, boot); ell(CX + bRx * .55, FY - .5, 2.3, 1.4, boot);
   }
-  /* 몸 */
-  ell(CX, bCy, bRx, bRy, mossFn(CX, bCy, bRx, bRy));
-  ell(CX, bCy + 1, bRx * .5, bRy * .55, shade(base, .45));
-  /* 머리 */
-  const hp = cfg.head === 4 ? 4 : 2;
-  shape(CX, hCy, hRx, hRy, mossFn(CX, hCy, hRx, hRy), hp);
-  let topY = Math.round(hCy - hRy);
-  if (cfg.head === 3) { const mc = mossFn(CX, hCy, hRx, hRy); R(CX - 2, topY - 1, 5, 1, mc(CX, topY - 1)); R(CX - 1, topY - 2, 3, 1, lt); set(CX, topY - 3, lt); topY -= 3; }
-  shape(CX, hCy + hRy * .22, hRx * .72, hRy * .6, shade(base, .5), hp);
+  /* 몸통 눈덩이 + 단추 */
+  ell(CX, bCy, bRx, bRy, snowFn(CX, bCy, bRx, bRy));
+  ell(CX, bCy - .5, 1, 1, coal); ell(CX, bCy + bRy * .45, 1, 1, coal);
+  /* 머리 눈덩이 */
+  ell(CX, hCy, hRx, hRy, snowFn(CX, hCy, hRx, hRy));
+  const topY = Math.round(hCy - hRy);
   /* 얼굴 */
-  const eY = Math.round(hCy + hRy * .12), eX = Math.max(3, Math.round(hRx * .42));
-  const eyeAt = side => {
+  const eY = Math.round(hCy - hRy * .1), eX = Math.max(2, Math.round(hRx * .42));
+  [-1, 1].forEach(side => {
     const ex = CX + side * eX;
     switch (cfg.eyes) {
-      case 0: R(ex, eY, 1, 2, dark); break;
-      case 1: R(ex - (side < 0 ? 1 : 0), eY, 2, 2, dark); break;
-      case 2: R(ex - 1, eY - 1, 3, 3, dark); set(ex - 1, eY - 1, W); break;
-      case 3: R(ex - 2 + (side < 0 ? 0 : 1), eY - 2, 4, 4, dark); R(ex - 2 + (side < 0 ? 0 : 1), eY - 2, 2, 1, W); set(ex - 2 + (side < 0 ? 0 : 1), eY - 1, W); break;
-      case 4: set(ex - 1, eY + 1, dark); set(ex, eY, dark); set(ex + 1, eY + 1, dark); break;
-      case 5: R(ex - 1, eY + 1, 3, 1, dark); break;
+      case 0: set(ex, eY, coal); break;
+      case 1: R(ex - (side < 0 ? 1 : 0), eY, 2, 2, coal); break;
+      case 2: R(ex - 1, eY - 1, 3, 3, coal); set(ex - 1, eY - 1, W); break;
+      case 3: R(ex - 1, eY - 1, 3, 3, coal); set(ex - 1, eY - 1, W); set(ex + 1, eY + 1, '#9fd0ff'); break;
+      case 4: set(ex - 1, eY + 1, coal); set(ex, eY, coal); set(ex + 1, eY + 1, coal); break;
+      case 5: R(ex - 1, eY + 1, 3, 1, coal); break;
     }
-  };
-  eyeAt(-1); eyeAt(1);
-  const mY = Math.round(hCy + hRy * .55), mc = shade(base, -.45), mo = '#7a2a30';
+  });
+  const nY = eY + 2;
+  if (cfg.nose === 0) { R(CX, nY, 3, 1, '#f08a24'); set(CX + 3, nY, '#e07010'); set(CX, nY + 1, '#d06a10'); }
+  if (cfg.nose === 1) { R(CX, nY, 5, 1, '#f08a24'); set(CX + 5, nY, '#e07010'); R(CX, nY + 1, 2, 1, '#d06a10'); }
+  if (cfg.nose === 2) R(CX, nY, 2, 1, '#e8836a');
+  const mY = nY + 2, mo = '#7a2a30';
   switch (cfg.mouth) {
-    case 0: set(CX - 1, mY, mc); set(CX, mY + 1, mc); set(CX + 1, mY, mc); break;
+    case 0: set(CX - 2, mY, coal); set(CX - 1, mY + 1, coal); set(CX + 1, mY + 1, coal); set(CX + 2, mY, coal); set(CX, mY + 1, coal); break;
     case 1: R(CX - 2, mY, 5, 2, mo); R(CX - 1, mY, 3, 1, W); break;
     case 2: R(CX - 1, mY, 2, 2, mo); break;
-    case 3: R(CX - 1, mY, 3, 1, mc); break;
-    case 4: set(CX - 1, mY, mc); set(CX, mY + 1, mc); set(CX + 1, mY, mc); R(CX, mY + 1, 1, 2, '#e86a7a'); break;
+    case 3: R(CX - 1, mY + 1, 3, 1, coal); break;
+    case 4: set(CX - 1, mY, coal); set(CX, mY + 1, coal); set(CX + 1, mY, coal); R(CX, mY + 1, 1, 2, '#e86a7a'); break;
   }
-  if (cfg.cheek === 1) { R(CX - eX - 3, eY + 2, 2, 1, '#f29aa0'); R(CX + eX + 2, eY + 2, 2, 1, '#f29aa0'); }
-  if (cfg.cheek === 2) { const fk = shade(base, -.3);[[-eX - 2, 2], [-eX - 1, 3], [-eX - 3, 3]].forEach(([dx, dy]) => { set(CX + dx, eY + dy, fk); set(CX - dx, eY + dy, fk); }); }
+  if (cfg.cheek === 1) { R(CX - eX - 2, eY + 2, 2, 1, '#f6a6b0'); R(CX + eX + 1, eY + 2, 2, 1, '#f6a6b0'); }
+  if (cfg.cheek === 2) { const fk = '#c9a48a';[[-eX - 1, 2], [-eX, 3], [-eX - 2, 3]].forEach(([dx, dy]) => { set(CX + dx, eY + dy, fk); set(CX - dx, eY + dy, fk); }); }
   /* 안경 */
   const fr = '#2a2630';
   [-1, 1].forEach(side => {
     const ex = CX + side * eX;
     switch (cfg.glasses) {
-      case 1: for (let a = 0; a < 6.28; a += .25) set(ex + Math.cos(a) * 2.7, eY + .5 + Math.sin(a) * 2.7, fr); break;
-      case 2: R(ex - 3, eY - 2, 6, 1, fr); R(ex - 3, eY + 3, 6, 1, fr); R(ex - 3, eY - 2, 1, 6, fr); R(ex + 2, eY - 2, 1, 6, fr); break;
+      case 1: for (let a = 0; a < 6.28; a += .25) set(ex + Math.cos(a) * 2.5, eY + .5 + Math.sin(a) * 2.5, fr); break;
+      case 2: R(ex - 2, eY - 2, 5, 1, fr); R(ex - 2, eY + 2, 5, 1, fr); R(ex - 2, eY - 2, 1, 5, fr); R(ex + 2, eY - 2, 1, 5, fr); break;
       case 3: R(ex - 2, eY - 1, 5, 3, '#151515'); set(ex - 1, eY - 1, '#777'); break;
       case 4: ['.X.X.', 'XXXXX', '.XXX.', '..X..'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') set(ex - 2 + i, eY - 1 + j, '#ff5c8a'); })); break;
     }
   });
   if (cfg.glasses) R(CX - eX + 3, eY, Math.max(1, 2 * eX - 5), 1, cfg.glasses === 4 ? '#ff5c8a' : fr);
-  /* 머리 장식 */
-  const G = '#4c8a2e', LG = '#7ccf55';
+  /* 모자 */
   switch (cfg.headw) {
-    case 1: R(CX, topY - 3, 1, 3, G); ell(CX - 2, topY - 4, 2, 1.1, LG); ell(CX + 2, topY - 5, 2, 1.1, LG); break;
-    case 2: R(CX, topY - 3, 1, 3, G); ell(CX - 1.6, topY - 4.5, 1.6, 1.6, '#5fbf4a'); ell(CX + 1.6, topY - 4.5, 1.6, 1.6, '#5fbf4a'); ell(CX, topY - 6.3, 1.6, 1.6, '#6fd05a'); break;
-    case 3: { const fx = CX + Math.round(hRx * .45), fy = topY + 1;[[0, -2], [2, 0], [0, 2], [-2, 0]].forEach(([dx, dy]) => ell(fx + dx, fy + dy, 1.3, 1.3, acc)); R(fx, fy, 1, 1, '#f2c94c'); } break;
-    case 4: { const bx = CX + Math.round(hRx * .4), by = topY + 1; R(bx - 3, by - 1, 2, 3, acc); R(bx + 2, by - 1, 2, 3, acc); R(bx - 1, by, 3, 1, shade(acc, -.3)); R(bx - 2, by - 1, 1, 1, shade(acc, .4)); } break;
-    case 5: ell(CX, topY + 2, hRx + 4, 1.7, '#e3c372'); ell(CX, topY - .5, hRx * .62, 2.8, '#d9b45a', topY + 2); R(CX - hRx * .62, topY + 1, hRx * 1.24 + 1, 1, acc); break;
-    case 6: { const c = (x, y) => ((x + y) % 3 === 0 ? '#6e4520' : '#8a5a2b'); ell(CX, topY + 2, hRx + .8, 3.4, c, topY + 2); R(CX, topY - 3, 1, 2, '#5a3a1a'); R(CX - hRx - 0, topY + 2, hRx * 2 + 1, 1, '#5a3a1a'); } break;
-    case 7: { ell(CX, topY + 2.5, hRx + 2.5, 4, (x, y) => (hash(x * 3, y * 7) < .16 ? '#fff' : acc), topY + 2.5); R(CX - hRx - 1, topY + 2, hRx * 2 + 3, 1, shade(acc, -.3)); } break;
+    case 1: R(CX - hRx * .62, topY - 6, hRx * 1.24 + 1, 6, '#2b2b2b'); R(CX - hRx * .62, topY - 2, hRx * 1.24 + 1, 1, acc); R(CX - hRx - 1, topY, hRx * 2 + 3, 1, '#2b2b2b'); R(CX - hRx * .62 + 1, topY - 6, 1, 3, '#555'); break;
+    case 2: ell(CX, topY + 2.5, hRx + .5, 4.2, (x, y) => (x % 2 ? acc : shade(acc, -.15)), topY + 2); R(CX - hRx, topY + 2, hRx * 2 + 1, 2, shade(acc, -.3)); ell(CX, topY - 2.2, 1.7, 1.7, W); break;
+    case 3: for (let a = 3.3; a < 6.2; a += .12) set(CX + Math.cos(a) * (hRx + .5), hCy + Math.sin(a) * (hRy + .5), '#8a94a0'); ell(CX - hRx, eY, 1.8, 2.4, acc); ell(CX + hRx, eY, 1.8, 2.4, acc); break;
+    case 4: { const bx = CX + Math.round(hRx * .4), by = topY + 1; R(bx - 3, by - 1, 2, 3, acc); R(bx + 2, by - 1, 2, 3, acc); R(bx - 1, by, 3, 1, shade(acc, -.3)); } break;
+    case 5: ell(CX, topY + 1.5, hRx + 4, 1.7, '#e3c372'); ell(CX, topY - 1, hRx * .62, 2.8, '#d9b45a', topY + 1.5); R(CX - hRx * .62, topY, hRx * 1.24 + 1, 1, acc); break;
+    case 6: for (let k = 0; k < 6; k++) { const w = hRx * .7 + k * .45; R(CX - w, topY - 5 + k, w * 2 + 1, 1, k === 5 ? '#7a848e' : (k % 2 ? '#9aa4ad' : '#a9b3bb')); } R(CX - hRx * .7 - 1, topY - 6, 1, 3, '#7a848e'); break;
+    case 7: { const fx = CX + Math.round(hRx * .45), fy = topY + 1;[[0, -2], [2, 0], [0, 2], [-2, 0]].forEach(([dx, dy]) => ell(fx + dx, fy + dy, 1.3, 1.3, acc)); R(fx, fy, 1, 1, '#f2c94c'); } break;
     case 8: { const gd = '#f2c94c'; R(CX - 4, topY - 2, 9, 3, gd); R(CX - 4, topY - 4, 1, 2, gd); R(CX, topY - 4, 1, 2, gd); R(CX + 4, topY - 4, 1, 2, gd); set(CX, topY - 1, '#e04848'); R(CX - 4, topY, 9, 1, '#c99a2a'); } break;
-    case 9: { ell(CX, topY + 2.5, hRx + .5, 4.2, (x, y) => (x % 2 ? acc : shade(acc, -.15)), topY + 2); R(CX - hRx, topY + 2, hRx * 2 + 1, 2, shade(acc, -.3)); ell(CX, topY - 2.2, 1.7, 1.7, W); } break;
+    case 9: { for (let k = 0; k < 6; k++) R(CX - hRx + k * .9, topY - k, (hRx * 2 + 1) - k * 1.8, 1, '#d9343a'); R(CX + 2, topY - 6, 3, 1, '#d9343a'); R(CX + 4, topY - 5, 2, 1, '#d9343a'); ell(CX + 6, topY - 4, 1.6, 1.6, W); R(CX - hRx - 1, topY + 1, hRx * 2 + 3, 2, W); } break;
   }
-  /* 목 장식 */
-  const nY = Math.round(bCy - bRy + 1.5);
+  /* 목 */
+  const nkY = Math.round(bCy - bRy + 1);
   switch (cfg.neck) {
-    case 1: R(CX - 3, nY - 1, 2, 3, acc); R(CX + 2, nY - 1, 2, 3, acc); R(CX - 1, nY, 3, 1, shade(acc, -.3)); break;
-    case 2: R(CX - bRx + 1, nY - 1, bRx * 2 - 1, 2, acc); R(CX + 2, nY + 1, 2, 4, acc); R(CX + 2, nY + 4, 2, 1, shade(acc, -.25)); break;
-    case 3: for (let x = Math.round(CX - bRx + 1); x <= CX + bRx - 1; x += 2) ell(x, nY + Math.abs(x - CX) * -.15 + 1, 1, 1, ['#f2a0b8', '#fff3a0', '#ffffff', '#f48fb1'][((x % 4) + 4) % 4]); break;
+    case 1: R(CX - bRx * .8, nkY - 1, bRx * 1.6 + 1, 2, acc); R(CX + 2, nkY + 1, 2, 4, acc); R(CX + 2, nkY + 4, 2, 1, shade(acc, -.25)); break;
+    case 2: R(CX - 3, nkY - 1, 2, 3, acc); R(CX + 2, nkY - 1, 2, 3, acc); R(CX - 1, nkY, 3, 1, shade(acc, -.3)); break;
+    case 3: R(CX - bRx * .8, nkY - 1, bRx * 1.6 + 1, 2, acc); for (let k = 0; k < 8; k++) R(CX - 3 - k * .2, nkY + 1 + k, 2, 1, k % 3 === 2 ? shade(acc, -.25) : acc); break;
   }
-  /* 팔 */
-  const sy = bCy - bRy * .35;
+  /* 나뭇가지 팔 + 장갑 */
+  const sy = bCy - bRy * .45;
   const armEnd = (side, kind) => {
     switch (kind) {
-      case 'rest': return [CX + side * (bRx - .5), sy + 5.5];
-      case 'wave': return pf ? [CX + side * (bRx + 4.5), sy - 3.5] : [CX + side * (bRx + 3.5), sy - 5.5];
-      case 'up': return pf ? [CX + side * (bRx + 3), sy - 8] : [CX + side * (bRx + 2.5), sy - 6.5];
-      default: return [CX + side * (bRx + 1.3), sy + 4.5];
+      case 'rest': return [CX + side * (bRx + 1), sy + 5];
+      case 'wave': return pf ? [CX + side * (bRx + 5), sy - 4] : [CX + side * (bRx + 4), sy - 6];
+      case 'up': return pf ? [CX + side * (bRx + 3.5), sy - 8.5] : [CX + side * (bRx + 3), sy - 7];
+      default: return [CX + side * (bRx + 3), sy + 4];
     }
   };
   const arm = (side, kind) => {
-    const sx = CX + side * (bRx - .8), [ex, ey] = armEnd(side, kind);
-    for (let i = 0; i <= 6; i++) { const t = i / 6; R(sx + (ex - sx) * t - .5, sy + (ey - sy) * t - .5, 2, 2, armC); }
-    ell(ex, ey, 1.4, 1.4, lt);
+    const sx = CX + side * (bRx - 1), [ex, ey] = armEnd(side, kind);
+    for (let i = 0; i <= 8; i++) { const t = i / 8; set(sx + (ex - sx) * t, sy + (ey - sy) * t, twig); }
+    const mx = sx + (ex - sx) * .55, my = sy + (ey - sy) * .55; set(mx, my - 1, twig); set(mx + side, my - 2, twig);
+    ell(ex, ey, 1.4, 1.4, acc);
     return [ex, ey];
   };
   const [hx, hy] = arm(-1, P.l); arm(1, P.r);
-  /* 소품 (왼손) */
+  /* 소품 */
+  const G = '#4c8a2e';
   if (P.l === 'down' || P.l === 'rest') switch (cfg.item) {
     case 1: R(hx, hy - 2, 1, 2, '#5a3a1a'); R(hx - 1.5, hy + 1, 4, 1, '#5a3a1a'); R(hx - 1.5, hy + 2, 4, 4, '#f2c94c'); R(hx - .5, hy + 3, 2, 2, '#fff3a0'); R(hx - 1.5, hy + 6, 4, 1, '#5a3a1a'); break;
-    case 2: R(hx, hy - 6, 1, 6, G);[[0, -2], [2, 0], [0, 2], [-2, 0]].forEach(([dx, dy]) => ell(hx + dx, hy - 8 + dy, 1.3, 1.3, acc)); set(hx, hy - 8, '#f2c94c'); break;
+    case 2: R(hx, hy - 6, 1, 6, G);[[0, -2], [2, 0], [0, 2], [-2, 0]].forEach(([dx, dy]) => ell(hx + dx, hy - 8 + dy, 1.3, 1.3, '#f48fb1')); set(hx, hy - 8, '#f2c94c'); break;
     case 3: R(hx, hy - 3, 1, 3, '#8a6a40');['.X.X.', 'XXXXX', 'XXXXX', '.XXX.', '..X..'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') set(hx - 2 + i, hy - 8 + j, '#e8435a'); })); set(hx - 1, hy - 7, '#ff9aa8'); break;
-    case 4: ell(hx, hy + 2, 2, 2.6, '#b07a3a'); ell(hx, hy - .2, 2.4, 1.2, '#6b4a26'); set(hx, hy - 2, '#5a3a1a'); break;
+    case 4: ell(hx, hy + 2.5, 2, 3, (x, y) => ((x + y) % 2 ? '#8a5a2b' : '#6b4320')); break;
   }
   /* 외곽선 */
   const out = g.map(r => r.slice());
   for (let y = 0; y < SPR_H; y++) for (let x = 0; x < SPR_W; x++) {
     if (g[y][x]) continue;
-    if ((g[y - 1] && g[y - 1][x]) || (g[y + 1] && g[y + 1][x]) || g[y][x - 1] || g[y][x + 1]) out[y][x] = '#1f2a17';
+    if ((g[y - 1] && g[y - 1][x]) || (g[y + 1] && g[y + 1][x]) || g[y][x - 1] || g[y][x + 1]) out[y][x] = '#3a4656';
   }
   let top = SPR_H; for (let y = 0; y < SPR_H && top === SPR_H; y++) if (out[y].some(Boolean)) top = y;
-  const hb = [Math.max(0, Math.round(CX - hRx - 5)), Math.max(0, topY - 7), 0, 0];
+  const hb = [Math.max(0, Math.round(CX - hRx - 5)), Math.max(0, topY - 8), 0, 0];
   hb[2] = Math.min(SPR_W - hb[0], Math.round(hRx * 2 + 11)); hb[3] = Math.min(SPR_H - hb[1], Math.round(hCy + hRy + 3) - hb[1]);
   return { grid: out, top, hb };
 }
@@ -347,32 +346,32 @@ function drawSpriteTo(cv, cfg, frame, scale, crop) {
 let LANG = 'en';
 const STR = {
   en: {
-    sub: 'Become a little moss sprite and step into the Yakushima forest!', steps: '① Create your sprite → ② Say hello → ③ Walk & chat on the big screen!',
-    create: 'Create my sprite →', back: '← Back', next: 'Next →', build: 'Make a sprite like you', hello: 'Say hello',
+    sub: 'Build your own little snowman and step into the Yakushima forest!', steps: '① Build your snowman → ② Say hello → ③ Walk & chat on the big screen!',
+    create: 'Build my snowman →', back: '← Back', next: 'Next →', build: 'Make a snowman like you', hello: 'Say hello',
     name: 'Name', namePh: 'Your name', msg: 'Message', msgPh: 'Say hello to the Champions', enter: 'Enter the forest 🌿', entering: 'Entering...',
     needName: 'Please enter your name', needMsg: 'Please write a message', fail: 'Failed to send. Please try again.',
     glow: 'Your name glows yellow on the big screen', move: '🕹 Move', drag: 'Drag the yellow button to walk around',
     say: '💬 Say something', sayPh: 'Type a message', send: 'Send', poseT: '🙌 Pose', edit: '🎨 Edit look', home: 'Home',
-    slow: 'Slow down a little 🙂', sent: 'Your bubble is on the big screen!', gone: 'Your sprite was removed. Please join again.',
-    backTo: n => '🎮 Back to ' + n, newOne: 'Join as a new sprite', random: '🎲 Random', walk: '🚶 Walk', posePv: '🙋 Pose', done: 'Done', editTitle: 'Edit your sprite',
+    slow: 'Slow down a little 🙂', sent: 'Your bubble is on the big screen!', gone: 'Your snowman was removed. Please join again.',
+    backTo: n => '🎮 Back to ' + n, newOne: 'Join as a new snowman', random: '🎲 Random', walk: '🚶 Walk', posePv: '🙋 Pose', done: 'Done', editTitle: 'Edit your snowman',
     quick: ['Hello! 👋', 'Nice to meet you!', 'Love this! 💚', 'Hello from Yakushima 🌲', "Let's connect!"],
-    cats: ['🌱 Body', '😊 Face', '🎀 Accessories', '🙌 Pose'],
-    secs: { color: 'Moss color', build: 'Body shape', height: 'Height', head: 'Face shape', eyes: 'Eyes', mouth: 'Mouth', cheek: 'Cheeks', headw: 'On your head', accC: 'Accessory color', glasses: 'Glasses', neck: 'Neck', pose: 'Pose', item: 'In your hand' },
+    cats: ['⛄ Body', '😊 Face', '🎀 Accessories', '🙌 Pose'],
+    secs: { color: 'Snow color', build: 'Body shape', height: 'Height', head: 'Head', eyes: 'Eyes', nose: 'Nose', mouth: 'Mouth', cheek: 'Cheeks', headw: 'On your head', accC: 'Accessory color', glasses: 'Glasses', neck: 'Neck', pose: 'Pose', item: 'In your hand' },
     itemNote: 'Items are hidden in Hooray / Jump poses (they show while walking)', itemToast: 'Shown while walking in this pose',
     scan: 'Scan to join!', msgs: '💬 Champion Messages', count: n => n + (n === 1 ? ' Champion' : ' Champions'), full: '⛶ Fullscreen', demo: 'Demo mode'
   },
   ko: {
-    sub: '작은 이끼 정령이 되어 야쿠시마 숲으로 들어와요!', steps: '① 정령 꾸미기 → ② 인사 남기기 → ③ 큰 화면에서 움직이며 대화!',
-    create: '정령 만들기 →', back: '← 처음', next: '다음 →', build: '나랑 닮게 꾸며요', hello: '첫 인사',
+    sub: '나만의 눈사람을 만들어 야쿠시마 숲으로 들어와요!', steps: '① 눈사람 꾸미기 → ② 인사 남기기 → ③ 큰 화면에서 움직이며 대화!',
+    create: '눈사람 만들기 →', back: '← 처음', next: '다음 →', build: '나랑 닮게 꾸며요', hello: '첫 인사',
     name: '이름', namePh: '이름 (예: 김하늘)', msg: '메시지', msgPh: '첫 인사를 남겨주세요', enter: '숲으로 입장 🌿', entering: '입장 중...',
     needName: '이름을 적어주세요', needMsg: '한마디를 적어주세요', fail: '전송 실패, 다시 눌러주세요',
     glow: '큰 화면에서 내 이름이 노랗게 빛나요', move: '🕹 움직이기', drag: '노란 버튼을 끌어서 걸어 다녀요',
     say: '💬 말하기', sayPh: '하고 싶은 말을 써 보세요', send: '보내기', poseT: '🙌 포즈 바꾸기', edit: '🎨 다시 꾸미기', home: '처음 화면',
     slow: '조금만 천천히요 🙂', sent: '큰 화면에 말풍선이 떴어요!', gone: '캐릭터가 삭제됐어요. 다시 입장해 주세요',
-    backTo: n => '🎮 ' + n + ' 정령으로 돌아가기', newOne: '새 정령으로 입장하기', random: '🎲 랜덤', walk: '🚶 걷기 보기', posePv: '🙋 포즈 보기', done: '완료', editTitle: '정령 꾸미기',
+    backTo: n => '🎮 ' + n + ' 눈사람으로 돌아가기', newOne: '새 눈사람으로 입장하기', random: '🎲 랜덤', walk: '🚶 걷기 보기', posePv: '🙋 포즈 보기', done: '완료', editTitle: '눈사람 꾸미기',
     quick: ['안녕하세요~ 👋', '반가워요!', '최고예요 💚', '야쿠시마 🌲', '축하해요! 🎉'],
-    cats: ['🌱 몸', '😊 얼굴', '🎀 꾸미기', '🙌 포즈·소품'],
-    secs: { color: '이끼 색', build: '체형', height: '키', head: '얼굴형', eyes: '눈', mouth: '입', cheek: '볼', headw: '머리 장식', accC: '장식 색', glasses: '안경', neck: '목 장식', pose: '포즈', item: '손에 든 소품' },
+    cats: ['⛄ 몸', '😊 얼굴', '🎀 꾸미기', '🙌 포즈·소품'],
+    secs: { color: '눈 색', build: '체형', height: '키', head: '머리', eyes: '눈', nose: '코', mouth: '입', cheek: '볼', headw: '머리 장식', accC: '장식 색', glasses: '안경', neck: '목 장식', pose: '포즈', item: '손에 든 소품' },
     itemNote: '만세·폴짝 포즈일 땐 걸어 다닐 때만 소품이 보여요', itemToast: '이 포즈에선 걸을 때 소품이 보여요',
     scan: 'QR 찍고 입장!', msgs: '💬 메시지', count: n => '참가자 ' + n + '명', full: '⛶ 전체화면', demo: '체험 모드'
   }
@@ -381,8 +380,8 @@ const t = k => STR[LANG][k] !== undefined ? STR[LANG][k] : STR.en[k];
 
 /* ---------- 정령 꾸미기 ---------- */
 const CATS = [
-  { secs: [{ k: 'color', colors: MOSS }, { k: 'build' }, { k: 'height' }] },
-  { secs: [{ k: 'head', crop: 'head' }, { k: 'eyes', crop: 'head' }, { k: 'mouth', crop: 'head' }, { k: 'cheek', crop: 'head' }] },
+  { secs: [{ k: 'color', colors: SNOW }, { k: 'build' }, { k: 'height' }] },
+  { secs: [{ k: 'head', crop: 'head' }, { k: 'eyes', crop: 'head' }, { k: 'nose', crop: 'head' }, { k: 'mouth', crop: 'head' }, { k: 'cheek', crop: 'head' }] },
   { secs: [{ k: 'headw', crop: 'head' }, { k: 'accC', colors: ACCC }, { k: 'glasses', crop: 'head' }, { k: 'neck' }] },
   { secs: [{ k: 'pose' }, { k: 'item', note: true }] }
 ];
@@ -427,7 +426,7 @@ function openBuilder(cfg, onDone) {
 }
 
 /* ---------- 저장소 (Firebase / 체험 모드) ---------- */
-const DEFAULT_SETTINGS = { title: 'Champions Energizer APAC 2026', subtitle: '', lang: 'en', hosts: [{ name: 'Aime', cfg: { color: 1, build: 1, height: 1, head: 0, eyes: 2, mouth: 1, cheek: 1, headw: 3, accC: 1, glasses: 0, neck: 0, pose: 2, item: 0 } }], showPanel: true, showQR: true, randomBubbles: true, bubbleSec: 8 };
+const DEFAULT_SETTINGS = { title: 'Champions Energizer APAC 2026', subtitle: '', lang: 'en', hosts: [{ name: 'Aime', cfg: { color: 0, build: 0, height: 2, head: 0, eyes: 3, nose: 0, mouth: 0, cheek: 1, headw: 4, accC: 1, glasses: 0, neck: 1, pose: 2, item: 0 } }], showPanel: true, showQR: true, randomBubbles: true, bubbleSec: 8 };
 function fixSettings(raw) {
   raw = raw || {}; const s = Object.assign({}, DEFAULT_SETTINGS, raw);
   let hs = s.hosts; if (hs && !Array.isArray(hs)) hs = Object.values(hs);
@@ -583,7 +582,7 @@ function startScreen() {
   const WW = 560, WH = 315, bg = makeBackground(WW, WH), ctx = cv.getContext('2d');
   let S = 1, OX = 0, OY = 0, settings = fixSettings(null), hostEnts = [];
   const guests = new Map(), cardList = [], sparks = [];
-  const spores = Array.from({ length: 46 }, () => ({ x: Math.random() * WW, y: Math.random() * WH, v: .05 + Math.random() * .12, p: Math.random() * 6.28 }));
+  const spores = Array.from({ length: 70 }, () => ({ x: Math.random() * WW, y: Math.random() * WH, v: .12 + Math.random() * .22, p: Math.random() * 6.28, s: Math.random() < .3 ? 2 : 1 }));
   function resize() { const r = stage.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.max(1, Math.round(r.width * d)); cv.height = Math.max(1, Math.round(r.height * d)); S = Math.max(cv.width / WW, cv.height / WH); OX = (cv.width - WW * S) / 2; OY = (cv.height - WH * S) / 2; }
   window.addEventListener('resize', resize); resize();
   function vis() { return { x0: Math.max(18, -OX / S + 18), x1: Math.min(WW - 18, (cv.width - OX) / S - 18), y0: Math.max(132, -OY / S + 50), y1: Math.min(WH - 8, (cv.height - OY) / S - 8) }; }
@@ -686,17 +685,17 @@ function startScreen() {
       if (e.state === 'greet') bob = -Math.round(Math.abs(Math.sin(e.timer / 7)) * 3);
       else if (!mv && POSES[e.cfg.pose].hop) bob = pfr === 'p1' ? -3 : 0;
       else if (!mv) bob = Math.floor(tick / 40 + e.phase) % 2 ? 1 : 0;
-      const ex = Math.round(e.x), ey = Math.round(e.y), spr = getSprite(e.cfg, mv ? e.frame : pfr), sw = Math.round(5 * [.72, 1, 1.3, 1.6][e.cfg.build]) + 3;
+      const ex = Math.round(e.x), ey = Math.round(e.y), spr = getSprite(e.cfg, mv ? e.frame : pfr), sw = Math.round(6 * [.58, .8, 1.08, 1.42][e.cfg.build]) + 2;
       ctx.fillStyle = 'rgba(20,40,10,.3)'; ctx.fillRect(ex - sw, ey - 1, sw * 2, 2);
       ctx.drawImage(spr, ex - CX, ey - FY + bob);
       tops.set(e, ey - FY + bob + spr.top);
     }
     /* 반딧불 포자 */
     for (const s of spores) {
-      s.y -= s.v * dt; s.p += .03 * dt; if (s.y < -4) { s.y = WH + 4; s.x = Math.random() * WW; }
-      const sx = Math.round(s.x + Math.sin(s.p) * 3), sy = Math.round(s.y), a = .45 + .4 * Math.sin(s.p * 1.3);
-      ctx.fillStyle = `rgba(232,255,176,${a * .3})`; ctx.fillRect(sx - 1, sy - 1, 3, 3);
-      ctx.fillStyle = `rgba(250,255,210,${a})`; ctx.fillRect(sx, sy, 1, 1);
+      s.y += s.v * dt; s.p += .02 * dt; if (s.y > WH + 4) { s.y = -4; s.x = Math.random() * WW; }
+      const sx = Math.round(s.x + Math.sin(s.p) * 4), sy = Math.round(s.y);
+      ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fillRect(sx, sy, s.s, s.s);
+      if (s.s > 1) { ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(sx - 1, sy, 4, 1); ctx.fillRect(sx, sy - 1, 1, 4); }
     }
     for (const p of sparks) { ctx.fillStyle = p.c; SPARK.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') ctx.fillRect(Math.round(p.x) + i, Math.round(p.y) + j, 1, 1); })); }
     ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1d1b22';
