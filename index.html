@@ -29,7 +29,7 @@ body.mobile{min-height:100dvh}
 .center{display:flex;flex-direction:column;align-items:center;gap:12px}
 .builder{display:flex;flex-direction:column;gap:12px}
 .pvwrap{display:flex;flex-direction:column;align-items:center;gap:10px;background:radial-gradient(#2f5428,#162414);border:2px solid var(--line);border-radius:16px;padding:16px}
-.pv{height:150px;width:auto}
+.pv{height:170px;width:auto}
 .pvwrap.stick{padding:10px}
 .pvwrap.stick{position:sticky;top:0;z-index:5}
 .minirow{display:flex;gap:8px}
@@ -148,253 +148,266 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.append(s); }); }
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
-/* ---------- 픽셀 캐릭터 ---------- */
-const SKIN = ['#fbe3d0', '#f8d9bd', '#efc29d', '#d9a27c', '#a8714f', '#7d5236'];
-const HAIRC = ['#2b2220', '#5b3a29', '#8d5b3a', '#d9b46a', '#c9c9d1', '#b33a3a', '#3557c4', '#e38fb6', '#2e8b57', '#f2f2f2', '#7a4fc9', '#e8793a'];
-const CLOTHC = ['#26262b', '#f2f2f2', '#3f6fd1', '#2e8b57', '#c94b4b', '#e8a33d', '#8e5bc9', '#7a8a99', '#f19bb6', '#4fb3c9', '#f2d64b', '#a3d977', '#5c3b2e'];
-const PANTSC = ['#3b5b8f', '#26262b', '#e8dcc0', '#7a7f88', '#f2f2f2', '#5c3b2e', '#1f2f55', '#f19bb6', '#c94b4b', '#2e8b57'];
-const HAIR_NAMES = ['기본', '옆가르마', '긴 생머리', '단발', '상투', '뾰족', '짧은 머리', '포니테일', '양갈래', '똥머리', '뽀글 파마', '웨이브 장발', '모히칸', '일자 뱅'];
-const EYES_NAMES = ['점 눈', '웃는 눈', '반짝 눈', '윙크', '졸린 눈', '화난 눈', '진한 눈썹', '놀란 눈'];
-const MOUTH_NAMES = ['기본', '활짝', '오!', '일자', '메롱', '큰 미소'];
-const EXTRA_NAMES = ['없음', '볼터치', '주근깨', '콧수염', '턱수염', '반창고', '점'];
-const GLASSES_NAMES = ['없음', '동그란 안경', '네모 안경', '선글라스', '초록 선글라스', '하트 안경'];
-const HAT_NAMES = ['없음', '캡모자', '비니', '리본', '꽃 화관', '왕관', '고깔모자', '고양이 귀', '헤드폰', '토끼 귀', '꽃핀', '중절모'];
-const OUTFIT_NAMES = ['정장', '후드티', '트레이닝복', '원피스', '티셔츠', '멜빵바지', '한복', '롱드레스', '셔츠+조끼', '가디건+치마', '체크셔츠', '니트'];
-const POSE_NAMES = ['차렷', '손 인사', '브이', '만세', '머리 하트', '박수', '허리 손', '경례'];
-const ITEM_NAMES = ['없음', '꽃다발', '하트 풍선', '선물상자', '하트 피켓', '카메라', '아이스크림', '응원봉', '커피'];
-const CFG_KEYS = { skin: SKIN.length, hair: HAIR_NAMES.length, hairC: HAIRC.length, eyes: EYES_NAMES.length, mouth: MOUTH_NAMES.length, extra: EXTRA_NAMES.length, glasses: GLASSES_NAMES.length, hat: HAT_NAMES.length, hatC: CLOTHC.length, outfit: OUTFIT_NAMES.length, clothC: CLOTHC.length, pantsC: PANTSC.length, pose: POSE_NAMES.length, item: ITEM_NAMES.length };
-const SPR_W = 26, SPR_H = 32, OXG = 5, OYG = 7;
+/* ---------- 이끼 정령 캐릭터 (오리지널) ---------- */
+const MOSS = ['#7fb24a', '#5a9a3c', '#3f7f3a', '#4f9a7a', '#a8b83c', '#c9a64a', '#9a7fc0', '#d98a7a'];
+const ACCC = ['#e0505a', '#f2a0b8', '#f2c94c', '#4f8fd9', '#8e5bc9', '#ffffff', '#2b2b2b', '#e8833a', '#3fae8a'];
+const NAMES = {
+  head: { en: ['Round', 'Wide', 'Long', 'Drop', 'Square'], ko: ['동그란', '넓적한', '길쭉한', '물방울', '네모난'] },
+  eyes: { en: ['Tiny', 'Normal', 'Big', 'Huge', 'Smiley', 'Sleepy'], ko: ['콩알', '보통', '큰 눈', '왕눈', '웃는 눈', '감은 눈'] },
+  mouth: { en: ['Smile', 'Grin', 'Oh!', 'Flat', 'Tongue'], ko: ['미소', '활짝', '오!', '일자', '메롱'] },
+  cheek: { en: ['None', 'Blush', 'Freckles'], ko: ['없음', '볼터치', '주근깨'] },
+  build: { en: ['Slim', 'Regular', 'Chubby', 'Round'], ko: ['날씬', '보통', '통통', '뚱뚱'] },
+  height: { en: ['Short', 'Medium', 'Tall'], ko: ['작게', '보통', '크게'] },
+  pose: { en: ['Stand', 'Sit', 'Wave', 'Hooray', 'Jump'], ko: ['서기', '앉기', '손 인사', '만세', '폴짝'] },
+  headw: { en: ['None', 'Sprout', 'Clover', 'Flower', 'Ribbon', 'Straw hat', 'Acorn cap', 'Mushroom cap', 'Crown', 'Beanie'], ko: ['없음', '새싹', '클로버', '꽃', '리본', '밀짚모자', '도토리 모자', '버섯 모자', '왕관', '비니'] },
+  glasses: { en: ['None', 'Round', 'Square', 'Shades', 'Hearts'], ko: ['없음', '동그란 안경', '네모 안경', '선글라스', '하트 안경'] },
+  neck: { en: ['None', 'Bow tie', 'Scarf', 'Lei'], ko: ['없음', '나비넥타이', '목도리', '꽃목걸이'] },
+  item: { en: ['None', 'Lantern', 'Flower', 'Heart', 'Acorn'], ko: ['없음', '등불', '꽃 한 송이', '하트', '도토리'] }
+};
+const CFG_KEYS = { color: MOSS.length, build: 4, height: 3, head: 5, eyes: 6, mouth: 5, cheek: 3, headw: 10, accC: ACCC.length, glasses: 5, neck: 4, pose: 5, item: 5 };
+const SPR_W = 40, SPR_H = 52, CX = 20, FY = 49;
 const ri = n => Math.floor(Math.random() * n);
-const clampI = (v, n) => { v = +v; return Number.isInteger(v) && v >= 0 && v < n ? v : 0; };
-function normCfg(c) {
-  c = { ...(c || {}) };
-  if (c.face != null && c.eyes == null) { const f = +c.face; if (f === 1) { c.eyes = 1; c.extra = 1; } if (f === 2) c.glasses = 1; if (f === 3) c.glasses = 3; if (f === 4) c.glasses = 4; }
-  const o = {}; for (const k in CFG_KEYS) o[k] = clampI(c[k], CFG_KEYS[k]); return o;
-}
+const clampI = (v, n, d = 0) => { v = +v; return Number.isInteger(v) && v >= 0 && v < n ? v : d; };
+const CFG_DEFAULT = { color: 0, build: 1, height: 1, head: 0, eyes: 1, mouth: 0, cheek: 1, headw: 1, accC: 0, glasses: 0, neck: 0, pose: 0, item: 0 };
+function normCfg(c) { c = c || {}; const o = {}; for (const k in CFG_KEYS) o[k] = clampI(c[k], CFG_KEYS[k], CFG_DEFAULT[k]); return o; }
 function randCfg() {
   const m = (n, p) => Math.random() < p ? 1 + ri(n - 1) : 0, K = CFG_KEYS;
-  return { skin: ri(5), hair: ri(K.hair), hairC: ri(8), eyes: ri(K.eyes), mouth: ri(K.mouth), extra: m(K.extra, .3), glasses: m(K.glasses, .3), hat: m(K.hat, .35), hatC: ri(CLOTHC.length), outfit: ri(K.outfit), clothC: ri(CLOTHC.length), pantsC: ri(PANTSC.length), pose: ri(K.pose), item: m(K.item, .35) };
+  return { color: ri(K.color), build: ri(K.build), height: ri(K.height), head: ri(K.head), eyes: ri(K.eyes), mouth: ri(K.mouth), cheek: ri(K.cheek), headw: m(K.headw, .7), accC: ri(K.accC), glasses: m(K.glasses, .25), neck: m(K.neck, .3), pose: ri(K.pose), item: m(K.item, .3) };
 }
 function shade(hex, a) {
   const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = n >> 8 & 255, b = n & 255;
   const f = v => clamp(Math.round(a < 0 ? v * (1 + a) : v + (255 - v) * a), 0, 255);
   return '#' + [f(r), f(g), f(b)].map(v => v.toString(16).padStart(2, '0')).join('');
 }
-/* 팔 경로: 오른팔 기준 [x,y,w,h] 목록 (마지막 = 손). 왼팔은 좌우 반전 */
-const A_DOWN = [[[11, 14, 2, 2], [11, 16, 2, 3], [11, 19, 2, 1]]];
-const A_UP = [[[11, 14, 2, 1], [12, 11, 2, 3], [13, 8, 2, 3], [13, 6, 2, 2]], [[11, 14, 2, 1], [12, 10, 2, 4], [13, 6, 2, 4], [13, 4, 2, 2]]];
 const POSES = [
-  { r: A_DOWN, l: A_DOWN },
-  { r: [[[11, 14, 2, 1], [12, 12, 2, 2], [13, 9, 2, 3], [13, 7, 2, 2]], [[11, 14, 2, 1], [12, 12, 2, 2], [14, 9, 2, 3], [15, 7, 2, 2]]], l: A_DOWN },
-  { r: [[[11, 14, 2, 1], [12, 12, 2, 2], [13, 9, 2, 3], [13, 8, 3, 1]]], l: A_DOWN, fx: (R, sk) => { R(13, 6, 1, 2, sk); R(15, 6, 1, 2, sk); } },
-  { r: A_UP, l: A_UP, hop: true },
-  { r: [[[11, 14, 2, 1], [12, 11, 2, 3], [13, 7, 2, 4], [14, 3, 2, 4], [13, 1, 2, 2], [11, -1, 2, 2], [9, -2, 2, 2], [8, -1, 1, 2]]], l: null },
-  { r: [[[11, 14, 2, 2], [11, 16, 2, 1], [9, 17, 2, 1], [8, 16, 1, 2]], [[11, 14, 2, 2], [11, 16, 2, 1], [10, 17, 1, 1], [9, 16, 1, 2]]], l: null },
-  { r: [[[11, 14, 2, 1], [12, 15, 2, 1], [13, 16, 1, 2], [11, 18, 2, 1]]], l: null },
-  { r: [[[11, 14, 2, 1], [12, 11, 2, 3], [13, 8, 2, 3], [12, 6, 2, 2]]], l: A_DOWN }
+  { l: 'down', r: 'down' }, { l: 'rest', r: 'rest', sit: true }, { l: 'down', r: 'wave' },
+  { l: 'up', r: 'up' }, { l: 'up', r: 'up', hop: true }
 ];
-POSES.forEach(p => { if (p.l === null) p.l = p.r; });
-const poseShowsItem = pose => POSES[pose].l === A_DOWN;
+const poseShowsItem = p => POSES[p].l === 'down' || POSES[p].l === 'rest';
 
-function buildGrid(cfg, frame) {
+function buildSprite(cfg, frame) {
   const g = Array.from({ length: SPR_H }, () => Array(SPR_W).fill(null));
-  const R = (x, y, w, hh, c) => { for (let j = 0; j < hh; j++) for (let i = 0; i < w; i++) { const X = x + i + OXG, Y = y + j + OYG; if (X >= 0 && X < SPR_W && Y >= 0 && Y < SPR_H) g[Y][X] = c; } };
-  const Rm = (x, y, w, hh, c) => R(16 - x - w, y, w, hh, c);
-  const RR = (x, y, w, hh, c) => { R(x, y, w, hh, c); Rm(x, y, w, hh, c); };
-  const get = (x, y) => (g[y + OYG] || [])[x + OXG];
-  const C = (x, y) => { const X = x + OXG, Y = y + OYG; if (g[Y]) g[Y][X] = null; };
-  const sk = SKIN[cfg.skin], hc = HAIRC[cfg.hairC], cc = CLOTHC[cfg.clothC], pc = PANTSC[cfg.pantsC], htc = CLOTHC[cfg.hatC];
-  const dark = '#2a2630', W = '#f5f5f5', red = '#d94050', pink = '#e8435a', G = '#4c8a2e';
+  const set = (x, y, c) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && x < SPR_W && y >= 0 && y < SPR_H) g[y][x] = c; };
+  const R = (x, y, w, h, c) => { x = Math.round(x); y = Math.round(y); for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) set(x + i, y + j, c); };
+  const hash = (x, y) => { let n = (x * 374761393 + y * 668265263) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; };
+  const shape = (cx, cy, rx, ry, col, p = 2, cutY = 1e9) => {
+    for (let y = Math.floor(cy - ry - 1); y <= Math.ceil(cy + ry + 1); y++) for (let x = Math.floor(cx - rx - 1); x <= Math.ceil(cx + rx + 1); x++) {
+      if (y > cutY) continue;
+      const d = Math.abs((x - cx) / rx) ** p + Math.abs((y - cy) / ry) ** p;
+      if (d <= 1) set(x, y, typeof col === 'function' ? col(x, y) : col);
+    }
+  };
+  const ell = (cx, cy, rx, ry, col, cutY) => shape(cx, cy, rx, ry, col, 2, cutY);
+  const base = MOSS[cfg.color], lt = shade(base, .25), dk = shade(base, -.22), acc = ACCC[cfg.accC];
+  const mossFn = (cx, cy, rx, ry) => (x, y) => {
+    const h = hash(x, y), l = -((x - cx) / rx) * .5 - ((y - cy) / ry) * .8;
+    if (h < .1) return lt; if (h > .9) return dk;
+    return l > .55 ? lt : l < -.6 ? dk : base;
+  };
   const walking = typeof frame === 'number', pf = frame === 'p1' ? 1 : 0;
-  const pose = POSES[walking ? 0 : cfg.pose];
-  const lUp = frame === 1 ? 1 : 0, rUp = frame === 2 ? 1 : 0, o = cfg.outfit;
+  const P = POSES[walking ? 0 : cfg.pose], sit = !!P.sit;
+  const wf = [.72, 1, 1.3, 1.6][cfg.build], hf = [.8, 1, 1.25][cfg.height];
+  const legH = sit ? 0 : Math.round(3 * hf);
+  const bRx = 4.6 * wf, bRy = 4.4 * hf;
+  const bCy = FY - legH - bRy + (sit ? .5 : 0);
+  let [hRx, hRy] = [[7, 7], [8.6, 6.2], [6.2, 8.4], [7, 7], [7, 6.8]][cfg.head];
+  const hs = 1 + (wf - 1) * .22; hRx *= hs; hRy *= hs;
+  const hCy = bCy - bRy - hRy + 3;
+  const lU = frame === 1 ? 1 : 0, rU = frame === 2 ? 1 : 0;
+  const dark = '#1d1b20', W = '#fbfbf5', armC = shade(base, -.12);
 
-  /* ── 옷 설정 ── */
-  let legs = 'pants', pants = pc, shoe = '#2b2b2b', sleeve = 'long', sl = shade(cc, -.12);
-  if (o === 0) pants = shade(cc, -.25);
-  if (o === 1) shoe = '#f0f0f0';
-  if (o === 2) { pants = cc; shoe = '#f0f0f0'; }
-  if (o === 3) { legs = 'thin'; sleeve = 'short'; }
-  if (o === 4) { sleeve = 'short'; shoe = '#f0f0f0'; }
-  if (o === 5) { sleeve = 'short'; sl = cc; }
-  if (o === 6) { legs = 'none'; sl = cc; }
-  if (o === 7) { legs = 'none'; sleeve = 'none'; }
-  if (o === 8) sl = '#e4e4ea';
-  if (o === 9) legs = 'thin';
-
-  /* ── 다리 ── */
-  if (legs === 'pants') { R(5, 20 - lUp, 2, 3, pants); R(9, 20 - rUp, 2, 3, pants); }
-  if (legs === 'thin') { R(5, 20 - lUp, 2, 3, sk); R(9, 20 - rUp, 2, 3, sk); }
-  if (legs !== 'none') { R(5, 23 - lUp, 2, 1, shoe); R(9, 23 - rUp, 2, 1, shoe); }
-
-  /* ── 몸통 ── */
-  R(5, 14, 6, 6, cc);
-  switch (o) {
-    case 0: R(7, 14, 2, 5, '#fafafa'); R(7, 15, 2, 3, '#b8323a'); R(6, 14, 1, 3, shade(cc, -.3)); R(9, 14, 1, 3, shade(cc, -.3)); break;
-    case 1: R(5, 13, 6, 1, shade(cc, -.15)); R(6, 14, 1, 3, W); R(9, 14, 1, 3, W); R(6, 17, 4, 2, shade(cc, -.15)); break;
-    case 2: R(6, 13, 4, 1, cc); R(7, 14, 1, 6, shade(cc, -.35)); break;
-    case 3: R(4, 18, 8, 2, cc); R(3, 20, 10, 1, cc); R(5, 17, 6, 1, shade(cc, -.2)); R(3, 20, 10, 1, shade(cc, -.1)); break;
-    case 4: R(6, 14, 4, 1, shade(cc, -.18)); { const ac = cfg.clothC === 4 ? W : pink; R(6, 16, 1, 1, ac); R(8, 16, 1, 1, ac); R(6, 17, 3, 1, ac); R(7, 18, 1, 1, ac); } break;
-    case 5: R(6, 16, 4, 4, pc); R(5, 14, 1, 3, pc); R(10, 14, 1, 3, pc); R(5, 18, 6, 2, pc); R(6, 16, 1, 1, '#f2c94c'); R(9, 16, 1, 1, '#f2c94c'); R(7, 17, 2, 1, shade(pc, -.2)); break;
-    case 6: R(7, 14, 2, 1, W); R(6, 14, 1, 1, W); R(8, 16, 1, 3, red); R(7, 16, 1, 1, red); R(5, 17, 6, 2, pc); R(4, 19, 8, 2, pc); R(3, 21, 10, 3, pc); R(3, 23, 10, 1, shade(pc, -.18)); R(6, 20, 1, 3, shade(pc, -.1)); R(9, 20, 1, 3, shade(pc, -.1)); break;
-    case 7: R(5, 17, 6, 1, shade(cc, -.12)); R(4, 18, 8, 2, cc); R(3, 20, 10, 2, cc); R(2, 22, 12, 2, cc); R(5, 19, 1, 5, shade(cc, -.1)); R(10, 19, 1, 5, shade(cc, -.1)); R(2, 23, 12, 1, shade(cc, -.18)); R(7, 14, 2, 1, shade(cc, .4)); break;
-    case 8: R(5, 14, 6, 6, '#e4e4ea'); R(5, 15, 2, 5, cc); R(9, 15, 2, 5, cc); R(7, 14, 2, 4, '#3a3340'); R(6, 17, 1, 1, '#f2c94c'); break;
-    case 9: R(7, 14, 2, 5, W); R(6, 15, 1, 1, W); R(6, 17, 1, 1, W); R(5, 19, 6, 1, pc); R(4, 20, 8, 1, pc); R(4, 20, 8, 1, shade(pc, -.12)); break;
-    case 10: for (let y = 14; y < 20; y++) for (let x = 5; x < 11; x++) if (x % 3 === 0 || y % 3 === 0) R(x, y, 1, 1, shade(cc, -.28)); R(7, 14, 2, 1, W); break;
-    case 11: R(5, 15, 6, 1, shade(cc, .35)); R(5, 17, 6, 1, shade(cc, .35)); R(6, 14, 4, 1, shade(cc, -.2)); R(5, 19, 6, 1, shade(cc, -.2)); break;
+  /* 다리 */
+  if (!sit) {
+    const lx = CX - Math.max(2, bRx * .45) - 1, rx = CX + Math.max(2, bRx * .45) - 1;
+    R(lx, bCy + bRy - 1 - lU, 3, legH + 1, dk); R(lx, FY - lU, 3, 1, shade(base, -.4));
+    R(rx, bCy + bRy - 1 - rU, 3, legH + 1, dk); R(rx, FY - rU, 3, 1, shade(base, -.4));
+  } else {
+    ell(CX - bRx * .55, FY - .5, 2.4, 1.5, dk); ell(CX + bRx * .55, FY - .5, 2.4, 1.5, dk);
   }
-  if (o !== 1 && o !== 2) R(7, 13, 2, 1, sk);
-
-  /* ── 얼굴 ── */
-  R(3, 2, 10, 11, sk); C(3, 12); C(12, 12); RR(2, 7, 1, 2, sk);
-  switch (cfg.extra) {
-    case 1: RR(4, 9, 2, 1, '#f2a0a0'); break;
-    case 2: { const fk = shade(sk, -.28); RR(4, 9, 1, 1, fk); RR(5, 10, 1, 1, fk); R(6, 9, 1, 1, fk); } break;
-    case 3: R(5, 9, 6, 1, hc); RR(5, 10, 1, 1, hc); break;
-    case 4: RR(3, 9, 1, 4, hc); R(4, 11, 8, 2, hc); R(5, 13, 6, 1, hc); break;
-    case 5: R(10, 9, 3, 1, '#f0d3a0'); R(11, 9, 1, 1, '#d9b07a'); break;
-    case 6: R(10, 10, 1, 1, dark); break;
+  /* 몸 */
+  ell(CX, bCy, bRx, bRy, mossFn(CX, bCy, bRx, bRy));
+  ell(CX, bCy + 1, bRx * .5, bRy * .55, shade(base, .45));
+  /* 머리 */
+  const hp = cfg.head === 4 ? 4 : 2;
+  shape(CX, hCy, hRx, hRy, mossFn(CX, hCy, hRx, hRy), hp);
+  let topY = Math.round(hCy - hRy);
+  if (cfg.head === 3) { const mc = mossFn(CX, hCy, hRx, hRy); R(CX - 2, topY - 1, 5, 1, mc(CX, topY - 1)); R(CX - 1, topY - 2, 3, 1, lt); set(CX, topY - 3, lt); topY -= 3; }
+  shape(CX, hCy + hRy * .22, hRx * .72, hRy * .6, shade(base, .5), hp);
+  /* 얼굴 */
+  const eY = Math.round(hCy + hRy * .12), eX = Math.max(3, Math.round(hRx * .42));
+  const eyeAt = side => {
+    const ex = CX + side * eX;
+    switch (cfg.eyes) {
+      case 0: R(ex, eY, 1, 2, dark); break;
+      case 1: R(ex - (side < 0 ? 1 : 0), eY, 2, 2, dark); break;
+      case 2: R(ex - 1, eY - 1, 3, 3, dark); set(ex - 1, eY - 1, W); break;
+      case 3: R(ex - 2 + (side < 0 ? 0 : 1), eY - 2, 4, 4, dark); R(ex - 2 + (side < 0 ? 0 : 1), eY - 2, 2, 1, W); set(ex - 2 + (side < 0 ? 0 : 1), eY - 1, W); break;
+      case 4: set(ex - 1, eY + 1, dark); set(ex, eY, dark); set(ex + 1, eY + 1, dark); break;
+      case 5: R(ex - 1, eY + 1, 3, 1, dark); break;
+    }
+  };
+  eyeAt(-1); eyeAt(1);
+  const mY = Math.round(hCy + hRy * .55), mc = shade(base, -.45), mo = '#7a2a30';
+  switch (cfg.mouth) {
+    case 0: set(CX - 1, mY, mc); set(CX, mY + 1, mc); set(CX + 1, mY, mc); break;
+    case 1: R(CX - 2, mY, 5, 2, mo); R(CX - 1, mY, 3, 1, W); break;
+    case 2: R(CX - 1, mY, 2, 2, mo); break;
+    case 3: R(CX - 1, mY, 3, 1, mc); break;
+    case 4: set(CX - 1, mY, mc); set(CX, mY + 1, mc); set(CX + 1, mY, mc); R(CX, mY + 1, 1, 2, '#e86a7a'); break;
   }
-  switch (cfg.eyes) {
-    case 0: RR(5, 7, 1, 2, dark); break;
-    case 1: [[4, 8], [5, 7], [6, 8]].forEach(([a, b]) => RR(a, b, 1, 1, dark)); break;
-    case 2: RR(4, 7, 2, 2, dark); R(4, 7, 1, 1, W); R(10, 7, 1, 1, W); break;
-    case 3: R(5, 7, 1, 2, dark); R(9, 8, 3, 1, dark); break;
-    case 4: RR(4, 8, 2, 1, dark); break;
-    case 5: RR(5, 7, 1, 2, dark); RR(4, 5, 1, 1, dark); RR(5, 6, 2, 1, dark); break;
-    case 6: RR(5, 7, 1, 2, dark); RR(4, 5, 3, 1, hc); break;
-    case 7: RR(4, 6, 3, 3, dark); RR(5, 7, 1, 1, W); break;
-  }
-  { const mc = shade(sk, -.32), mo = '#8a2d35';
-    switch (cfg.mouth) {
-      case 0: R(7, 10, 2, 1, mc); break;
-      case 1: R(6, 10, 4, 2, mo); R(7, 10, 2, 1, W); break;
-      case 2: R(7, 10, 2, 2, mo); break;
-      case 3: R(6, 10, 4, 1, dark); break;
-      case 4: R(6, 10, 4, 1, mc); R(8, 11, 2, 1, '#e86a7a'); break;
-      case 5: RR(5, 10, 1, 1, mc); R(6, 11, 4, 1, mc); break;
-    } }
-  { const fr = '#3a3340';
+  if (cfg.cheek === 1) { R(CX - eX - 3, eY + 2, 2, 1, '#f29aa0'); R(CX + eX + 2, eY + 2, 2, 1, '#f29aa0'); }
+  if (cfg.cheek === 2) { const fk = shade(base, -.3);[[-eX - 2, 2], [-eX - 1, 3], [-eX - 3, 3]].forEach(([dx, dy]) => { set(CX + dx, eY + dy, fk); set(CX - dx, eY + dy, fk); }); }
+  /* 안경 */
+  const fr = '#2a2630';
+  [-1, 1].forEach(side => {
+    const ex = CX + side * eX;
     switch (cfg.glasses) {
-      case 1: RR(5, 6, 1, 1, fr); RR(4, 7, 1, 2, fr); RR(6, 7, 1, 2, fr); RR(5, 9, 1, 1, fr); R(7, 7, 2, 1, fr); break;
-      case 2: RR(3, 6, 4, 1, fr); RR(3, 9, 4, 1, fr); RR(3, 7, 1, 2, fr); RR(6, 7, 1, 2, fr); R(7, 7, 2, 1, fr); break;
-      case 3: RR(3, 7, 4, 2, '#151515'); R(7, 7, 2, 1, '#151515'); RR(4, 7, 1, 1, '#777'); break;
-      case 4: R(3, 6, 10, 1, '#151515'); RR(3, 7, 4, 2, '#33e06a'); RR(4, 7, 1, 1, '#c8ffd9'); break;
-      case 5: ['.X.X.', 'XXXXX', '.XXX.', '..X..'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') RR(2 + i, 6 + j, 1, 1, '#ff5c8a'); })); RR(3, 7, 1, 1, '#ffd1dc'); R(7, 7, 2, 1, '#ff5c8a'); break;
-    } }
-
-  /* ── 머리카락 ── */
-  { const hi = shade(hc, .25), dk = shade(hc, -.22);
-    const base = () => { R(3, 0, 10, 1, hc); R(2, 1, 12, 3, hc); R(2, 4, 1, 3, hc); R(13, 4, 1, 3, hc); R(5, 1, 3, 1, hi); };
-    switch (cfg.hair) {
-      case 0: base(); R(3, 4, 4, 1, hc); R(9, 4, 4, 1, hc); RR(3, 5, 1, 1, hc); break;
-      case 1: base(); R(3, 4, 7, 1, hc); R(3, 5, 3, 1, hc); R(12, 4, 1, 2, hc); break;
-      case 2: base(); RR(3, 4, 3, 1, hc); RR(1, 4, 2, 13, hc); RR(1, 16, 1, 1, dk); break;
-      case 3: base(); R(3, 4, 10, 1, hc); RR(3, 5, 2, 1, hc); RR(1, 4, 2, 8, hc); break;
-      case 4: R(6, -2, 4, 2, hc); R(7, -2, 2, 1, hi); base(); RR(3, 4, 4, 1, hc); RR(1, 4, 2, 4, hc); break;
-      case 5: base(); R(3, -1, 2, 1, hc); R(6, -2, 2, 2, hc); R(9, -1, 2, 1, hc); R(12, 0, 1, 1, hc); R(3, 4, 2, 1, hc); R(6, 4, 2, 1, hc); R(10, 4, 3, 1, hc); break;
-      case 6: R(3, 1, 10, 1, hc); R(2, 2, 12, 2, hc); RR(2, 4, 1, 2, hc); R(5, 2, 3, 1, hi); break;
-      case 7: base(); R(3, 4, 5, 1, hc); R(11, 4, 2, 1, hc); R(14, 2, 2, 3, hc); R(15, 5, 2, 6, hc); R(16, 11, 1, 2, hc); R(14, 2, 1, 1, '#e04848'); break;
-      case 8: base(); RR(3, 4, 4, 1, hc); RR(-1, 4, 3, 8, hc); RR(0, 12, 1, 1, hc); RR(0, 3, 2, 1, '#e04848'); break;
-      case 9: R(5, -5, 6, 4, hc); R(6, -6, 4, 1, hc); R(6, -5, 2, 1, hi); R(5, -2, 6, 1, dk); base(); RR(3, 4, 3, 1, hc); break;
-      case 10: R(2, -2, 12, 1, hc); R(1, -1, 14, 6, hc); RR(0, 1, 3, 10, hc); RR(3, 5, 1, 1, hc);
-        for (let y = -2; y < 11; y++) for (let x = 0; x < 16; x++) if (get(x, y) === hc && (x * 3 + y * 5) % 7 === 0) R(x, y, 1, 1, dk);
-        R(5, -1, 3, 1, hi); break;
-      case 11: base(); R(3, 4, 6, 1, hc); R(3, 5, 2, 1, hc); R(12, 4, 1, 2, hc); RR(1, 4, 2, 14, hc); R(0, 7, 1, 3, hc); R(0, 13, 1, 3, hc); R(15, 9, 1, 3, hc); R(15, 15, 1, 2, hc); R(1, 10, 1, 1, dk); R(14, 12, 1, 1, dk); break;
-      case 12: { const sv = shade(hc, .45); RR(2, 2, 4, 2, sv); RR(2, 4, 1, 2, sv); R(6, -4, 4, 8, hc); R(7, -4, 1, 7, hi); } break;
-      case 13: base(); R(3, 4, 10, 2, hc); RR(1, 4, 2, 8, hc); RR(1, 11, 2, 1, dk); break;
-    } }
-
-  /* ── 모자 ── */
-  switch (cfg.hat) {
-    case 1: R(3, -1, 10, 1, htc); R(2, 0, 12, 3, htc); R(7, -1, 2, 1, shade(htc, .3)); R(1, 3, 14, 1, shade(htc, -.25)); break;
-    case 2: R(3, -2, 10, 1, htc); R(2, -1, 12, 4, htc); R(2, 3, 12, 2, shade(htc, -.2)); for (let x = 3; x < 13; x += 2) R(x, 3, 1, 2, shade(htc, -.35)); R(7, -4, 2, 2, W); break;
-    case 3: R(9, -1, 2, 3, htc); R(13, -1, 2, 3, htc); R(11, 0, 2, 1, shade(htc, -.3)); R(9, -1, 1, 1, shade(htc, .35)); break;
-    case 4: [2, 5, 8, 11].forEach((x, i) => { const col = ['#f7a8c4', '#ffffff', '#fff3a0', '#f48fb1'][i]; R(x, -1, 2, 2, col); R(x + (i % 2), -1 + (i % 2), 1, 1, '#f2c94c'); R(x + 2, 0, 1, 1, G); }); R(13, 1, 1, 1, G); break;
-    case 5: { const gd = '#f2c94c'; R(4, -2, 8, 3, gd); R(4, -4, 1, 2, gd); R(7, -4, 2, 2, gd); R(11, -4, 1, 2, gd); R(4, 0, 8, 1, '#c99a2a'); R(7, -1, 2, 1, '#e04848'); R(5, -1, 1, 1, '#4fb3c9'); R(10, -1, 1, 1, '#4fb3c9'); } break;
-    case 6: for (let k = 0; k < 5; k++) R(7 - k, -5 + k, 2 + 2 * k, 1, k % 2 ? W : htc); R(7, -7, 2, 2, '#f2c94c'); break;
-    case 7: RR(3, -1, 3, 1, htc); RR(3, -2, 2, 1, htc); RR(3, -3, 1, 1, htc); RR(4, -1, 1, 1, '#f2a0b8'); break;
-    case 8: R(3, -2, 10, 1, '#333'); RR(2, -1, 1, 2, '#333'); RR(1, 1, 1, 3, '#333'); RR(0, 4, 3, 5, htc); RR(0, 5, 1, 3, shade(htc, -.25)); break;
-    case 9: RR(4, -6, 2, 6, W); RR(5, -5, 1, 4, '#f2a0b8'); break;
-    case 10: R(11, 1, 3, 1, htc); R(12, 0, 1, 3, htc); R(12, 1, 1, 1, '#f2c94c'); break;
-    case 11: R(4, -4, 8, 4, htc); R(5, -4, 6, 1, shade(htc, .2)); R(7, -4, 2, 1, shade(htc, -.2)); R(4, -1, 8, 1, shade(htc, -.45)); R(1, 0, 14, 1, htc); break;
+      case 1: for (let a = 0; a < 6.28; a += .25) set(ex + Math.cos(a) * 2.7, eY + .5 + Math.sin(a) * 2.7, fr); break;
+      case 2: R(ex - 3, eY - 2, 6, 1, fr); R(ex - 3, eY + 3, 6, 1, fr); R(ex - 3, eY - 2, 1, 6, fr); R(ex + 2, eY - 2, 1, 6, fr); break;
+      case 3: R(ex - 2, eY - 1, 5, 3, '#151515'); set(ex - 1, eY - 1, '#777'); break;
+      case 4: ['.X.X.', 'XXXXX', '.XXX.', '..X..'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') set(ex - 2 + i, eY - 1 + j, '#ff5c8a'); })); break;
+    }
+  });
+  if (cfg.glasses) R(CX - eX + 3, eY, Math.max(1, 2 * eX - 5), 1, cfg.glasses === 4 ? '#ff5c8a' : fr);
+  /* 머리 장식 */
+  const G = '#4c8a2e', LG = '#7ccf55';
+  switch (cfg.headw) {
+    case 1: R(CX, topY - 3, 1, 3, G); ell(CX - 2, topY - 4, 2, 1.1, LG); ell(CX + 2, topY - 5, 2, 1.1, LG); break;
+    case 2: R(CX, topY - 3, 1, 3, G); ell(CX - 1.6, topY - 4.5, 1.6, 1.6, '#5fbf4a'); ell(CX + 1.6, topY - 4.5, 1.6, 1.6, '#5fbf4a'); ell(CX, topY - 6.3, 1.6, 1.6, '#6fd05a'); break;
+    case 3: { const fx = CX + Math.round(hRx * .45), fy = topY + 1;[[0, -2], [2, 0], [0, 2], [-2, 0]].forEach(([dx, dy]) => ell(fx + dx, fy + dy, 1.3, 1.3, acc)); R(fx, fy, 1, 1, '#f2c94c'); } break;
+    case 4: { const bx = CX + Math.round(hRx * .4), by = topY + 1; R(bx - 3, by - 1, 2, 3, acc); R(bx + 2, by - 1, 2, 3, acc); R(bx - 1, by, 3, 1, shade(acc, -.3)); R(bx - 2, by - 1, 1, 1, shade(acc, .4)); } break;
+    case 5: ell(CX, topY + 2, hRx + 4, 1.7, '#e3c372'); ell(CX, topY - .5, hRx * .62, 2.8, '#d9b45a', topY + 2); R(CX - hRx * .62, topY + 1, hRx * 1.24 + 1, 1, acc); break;
+    case 6: { const c = (x, y) => ((x + y) % 3 === 0 ? '#6e4520' : '#8a5a2b'); ell(CX, topY + 2, hRx + .8, 3.4, c, topY + 2); R(CX, topY - 3, 1, 2, '#5a3a1a'); R(CX - hRx - 0, topY + 2, hRx * 2 + 1, 1, '#5a3a1a'); } break;
+    case 7: { ell(CX, topY + 2.5, hRx + 2.5, 4, (x, y) => (hash(x * 3, y * 7) < .16 ? '#fff' : acc), topY + 2.5); R(CX - hRx - 1, topY + 2, hRx * 2 + 3, 1, shade(acc, -.3)); } break;
+    case 8: { const gd = '#f2c94c'; R(CX - 4, topY - 2, 9, 3, gd); R(CX - 4, topY - 4, 1, 2, gd); R(CX, topY - 4, 1, 2, gd); R(CX + 4, topY - 4, 1, 2, gd); set(CX, topY - 1, '#e04848'); R(CX - 4, topY, 9, 1, '#c99a2a'); } break;
+    case 9: { ell(CX, topY + 2.5, hRx + .5, 4.2, (x, y) => (x % 2 ? acc : shade(acc, -.15)), topY + 2); R(CX - hRx, topY + 2, hRx * 2 + 1, 2, shade(acc, -.3)); ell(CX, topY - 2.2, 1.7, 1.7, W); } break;
   }
-
-  /* ── 팔 (포즈) ── */
-  const arm = (path, Rf) => { const n = path.length; path.forEach((p, i) => { const hand = i === n - 1; Rf(p[0], p[1], p[2], p[3], hand || sleeve === 'none' ? sk : sleeve === 'short' ? (i === 0 ? sl : sk) : sl); }); };
-  const pathOf = arr => arr[Math.min(pf, arr.length - 1)];
-  arm(pathOf(pose.r), R); arm(pathOf(pose.l), Rm);
-  if (pose.fx) pose.fx(R, sk);
-  if (o === 2) { if (pose.r === A_DOWN) R(12, 14, 1, 5, W); if (pose.l === A_DOWN) R(3, 14, 1, 5, W); }
-
-  /* ── 소품 (왼손) ── */
-  if (pose.l === A_DOWN) switch (cfg.item) {
-    case 1: R(3, 19, 1, 3, G); R(2, 20, 1, 2, G); R(4, 20, 1, 2, G); R(1, 15, 5, 4, '#f7a8c4'); R(2, 15, 1, 1, '#fff'); R(4, 16, 1, 1, '#fff3a0'); R(1, 17, 1, 1, '#fff'); R(3, 17, 1, 1, '#e05a8a'); R(5, 15, 1, 1, '#fff3a0'); R(2, 14, 3, 1, G); break;
-    case 2: ['.X.X.', 'XXXXX', 'XXXXX', '.XXX.', '..X..'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') R(-3 + i, 1 + j, 1, 1, pink); })); R(-2, 2, 1, 1, '#ff9aa8'); R(-1, 6, 1, 4, '#ddd'); R(0, 10, 1, 4, '#ddd'); R(1, 14, 1, 2, '#ddd'); R(2, 16, 1, 3, '#ddd'); break;
-    case 3: R(0, 18, 5, 4, '#e04848'); R(2, 18, 1, 4, '#f2c94c'); R(0, 19, 5, 1, '#f2c94c'); R(1, 17, 1, 1, '#f2c94c'); R(3, 17, 1, 1, '#f2c94c'); break;
-    case 4: R(2, 10, 1, 10, '#8a6a40'); R(-4, 3, 7, 7, '#fff'); [[-2, 5], [0, 5], [-3, 6], [-2, 6], [-1, 6], [0, 6], [1, 6], [-2, 7], [-1, 7], [0, 7], [-1, 8]].forEach(([a, b]) => R(a, b, 1, 1, pink)); break;
-    case 5: R(0, 17, 5, 3, '#3a3a40'); R(2, 18, 1, 1, '#7ab8d9'); R(1, 16, 1, 1, '#3a3a40'); R(4, 17, 1, 1, '#f2c94c'); break;
-    case 6: R(2, 20, 3, 1, '#d9a35b'); R(3, 21, 1, 2, '#d9a35b'); R(2, 17, 3, 3, '#f7a8c4'); R(3, 16, 1, 1, '#f7a8c4'); R(2, 17, 1, 1, '#ffd1dc'); R(4, 16, 1, 1, pink); break;
-    case 7: R(3, 16, 1, 4, '#555'); R(2, 11, 3, 5, '#ffe14d'); R(3, 12, 1, 3, '#fff8c0'); break;
-    case 8: R(1, 17, 3, 4, '#f5f5f5'); R(1, 18, 3, 1, '#8a6a40'); R(1, 16, 3, 1, '#3a3a40'); break;
+  /* 목 장식 */
+  const nY = Math.round(bCy - bRy + 1.5);
+  switch (cfg.neck) {
+    case 1: R(CX - 3, nY - 1, 2, 3, acc); R(CX + 2, nY - 1, 2, 3, acc); R(CX - 1, nY, 3, 1, shade(acc, -.3)); break;
+    case 2: R(CX - bRx + 1, nY - 1, bRx * 2 - 1, 2, acc); R(CX + 2, nY + 1, 2, 4, acc); R(CX + 2, nY + 4, 2, 1, shade(acc, -.25)); break;
+    case 3: for (let x = Math.round(CX - bRx + 1); x <= CX + bRx - 1; x += 2) ell(x, nY + Math.abs(x - CX) * -.15 + 1, 1, 1, ['#f2a0b8', '#fff3a0', '#ffffff', '#f48fb1'][((x % 4) + 4) % 4]); break;
   }
-
-  /* ── 외곽선 ── */
+  /* 팔 */
+  const sy = bCy - bRy * .35;
+  const armEnd = (side, kind) => {
+    switch (kind) {
+      case 'rest': return [CX + side * (bRx - .5), sy + 5.5];
+      case 'wave': return pf ? [CX + side * (bRx + 4.5), sy - 3.5] : [CX + side * (bRx + 3.5), sy - 5.5];
+      case 'up': return pf ? [CX + side * (bRx + 3), sy - 8] : [CX + side * (bRx + 2.5), sy - 6.5];
+      default: return [CX + side * (bRx + 1.3), sy + 4.5];
+    }
+  };
+  const arm = (side, kind) => {
+    const sx = CX + side * (bRx - .8), [ex, ey] = armEnd(side, kind);
+    for (let i = 0; i <= 6; i++) { const t = i / 6; R(sx + (ex - sx) * t - .5, sy + (ey - sy) * t - .5, 2, 2, armC); }
+    ell(ex, ey, 1.4, 1.4, lt);
+    return [ex, ey];
+  };
+  const [hx, hy] = arm(-1, P.l); arm(1, P.r);
+  /* 소품 (왼손) */
+  if (P.l === 'down' || P.l === 'rest') switch (cfg.item) {
+    case 1: R(hx, hy - 2, 1, 2, '#5a3a1a'); R(hx - 1.5, hy + 1, 4, 1, '#5a3a1a'); R(hx - 1.5, hy + 2, 4, 4, '#f2c94c'); R(hx - .5, hy + 3, 2, 2, '#fff3a0'); R(hx - 1.5, hy + 6, 4, 1, '#5a3a1a'); break;
+    case 2: R(hx, hy - 6, 1, 6, G);[[0, -2], [2, 0], [0, 2], [-2, 0]].forEach(([dx, dy]) => ell(hx + dx, hy - 8 + dy, 1.3, 1.3, acc)); set(hx, hy - 8, '#f2c94c'); break;
+    case 3: R(hx, hy - 3, 1, 3, '#8a6a40');['.X.X.', 'XXXXX', 'XXXXX', '.XXX.', '..X..'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') set(hx - 2 + i, hy - 8 + j, '#e8435a'); })); set(hx - 1, hy - 7, '#ff9aa8'); break;
+    case 4: ell(hx, hy + 2, 2, 2.6, '#b07a3a'); ell(hx, hy - .2, 2.4, 1.2, '#6b4a26'); set(hx, hy - 2, '#5a3a1a'); break;
+  }
+  /* 외곽선 */
   const out = g.map(r => r.slice());
   for (let y = 0; y < SPR_H; y++) for (let x = 0; x < SPR_W; x++) {
     if (g[y][x]) continue;
-    if ((g[y - 1] && g[y - 1][x]) || (g[y + 1] && g[y + 1][x]) || g[y][x - 1] || g[y][x + 1]) out[y][x] = '#231f29';
+    if ((g[y - 1] && g[y - 1][x]) || (g[y + 1] && g[y + 1][x]) || g[y][x - 1] || g[y][x + 1]) out[y][x] = '#1f2a17';
   }
-  return out;
+  let top = SPR_H; for (let y = 0; y < SPR_H && top === SPR_H; y++) if (out[y].some(Boolean)) top = y;
+  const hb = [Math.max(0, Math.round(CX - hRx - 5)), Math.max(0, topY - 7), 0, 0];
+  hb[2] = Math.min(SPR_W - hb[0], Math.round(hRx * 2 + 11)); hb[3] = Math.min(SPR_H - hb[1], Math.round(hCy + hRy + 3) - hb[1]);
+  return { grid: out, top, hb };
 }
 const sprCache = new Map();
 function getSprite(cfg, frame = 0) {
   const key = Object.keys(CFG_KEYS).map(k => cfg[k]).join('-') + '|' + frame;
   let c = sprCache.get(key); if (c) return c;
   if (sprCache.size > 4000) sprCache.clear();
-  c = document.createElement('canvas'); c.width = SPR_W; c.height = SPR_H;
-  const x = c.getContext('2d'), g = buildGrid(cfg, frame);
-  for (let y = 0; y < SPR_H; y++) for (let i = 0; i < SPR_W; i++) if (g[y][i]) { x.fillStyle = g[y][i]; x.fillRect(i, y, 1, 1); }
+  const s = buildSprite(cfg, frame);
+  c = document.createElement('canvas'); c.width = SPR_W; c.height = SPR_H; c.top = s.top; c.hb = s.hb;
+  const x = c.getContext('2d');
+  for (let y = 0; y < SPR_H; y++) for (let i = 0; i < SPR_W; i++) if (s.grid[y][i]) { x.fillStyle = s.grid[y][i]; x.fillRect(i, y, 1, 1); }
   sprCache.set(key, c); return c;
 }
-const CROPS = { head: [5, 0, 16, 21], face: [7, 10, 12, 11] };
 function drawSpriteTo(cv, cfg, frame, scale, crop) {
-  const [sx, sy, sw, sh] = crop || [0, 0, SPR_W, SPR_H];
+  const spr = getSprite(cfg, frame);
+  let [sx, sy, sw, sh] = crop === 'head' ? spr.hb : [0, Math.max(0, spr.top - 1), SPR_W, SPR_H - Math.max(0, spr.top - 1)];
   cv.width = sw * scale; cv.height = sh * scale;
   const x = cv.getContext('2d'); x.imageSmoothingEnabled = false;
-  x.clearRect(0, 0, cv.width, cv.height); x.drawImage(getSprite(cfg, frame), sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+  x.clearRect(0, 0, cv.width, cv.height); x.drawImage(spr, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
 }
 
-/* ---------- 캐릭터 꾸미기 ---------- */
+/* ---------- 언어 ---------- */
+let LANG = 'en';
+const STR = {
+  en: {
+    sub: 'Become a little moss sprite and step into the Yakushima forest!', steps: '① Create your sprite → ② Say hello → ③ Walk & chat on the big screen!',
+    create: 'Create my sprite →', back: '← Back', next: 'Next →', build: 'Make a sprite like you', hello: 'Say hello',
+    name: 'Name', namePh: 'Your name', msg: 'Message', msgPh: 'Say hello to the Champions', enter: 'Enter the forest 🌿', entering: 'Entering...',
+    needName: 'Please enter your name', needMsg: 'Please write a message', fail: 'Failed to send. Please try again.',
+    glow: 'Your name glows yellow on the big screen', move: '🕹 Move', drag: 'Drag the yellow button to walk around',
+    say: '💬 Say something', sayPh: 'Type a message', send: 'Send', poseT: '🙌 Pose', edit: '🎨 Edit look', home: 'Home',
+    slow: 'Slow down a little 🙂', sent: 'Your bubble is on the big screen!', gone: 'Your sprite was removed. Please join again.',
+    backTo: n => '🎮 Back to ' + n, newOne: 'Join as a new sprite', random: '🎲 Random', walk: '🚶 Walk', posePv: '🙋 Pose', done: 'Done', editTitle: 'Edit your sprite',
+    quick: ['Hello! 👋', 'Nice to meet you!', 'Love this! 💚', 'Hello from Yakushima 🌲', "Let's connect!"],
+    cats: ['🌱 Body', '😊 Face', '🎀 Accessories', '🙌 Pose'],
+    secs: { color: 'Moss color', build: 'Body shape', height: 'Height', head: 'Face shape', eyes: 'Eyes', mouth: 'Mouth', cheek: 'Cheeks', headw: 'On your head', accC: 'Accessory color', glasses: 'Glasses', neck: 'Neck', pose: 'Pose', item: 'In your hand' },
+    itemNote: 'Items are hidden in Hooray / Jump poses (they show while walking)', itemToast: 'Shown while walking in this pose',
+    scan: 'Scan to join!', msgs: '💬 Champion Messages', count: n => n + (n === 1 ? ' Champion' : ' Champions'), full: '⛶ Fullscreen', demo: 'Demo mode'
+  },
+  ko: {
+    sub: '작은 이끼 정령이 되어 야쿠시마 숲으로 들어와요!', steps: '① 정령 꾸미기 → ② 인사 남기기 → ③ 큰 화면에서 움직이며 대화!',
+    create: '정령 만들기 →', back: '← 처음', next: '다음 →', build: '나랑 닮게 꾸며요', hello: '첫 인사',
+    name: '이름', namePh: '이름 (예: 김하늘)', msg: '메시지', msgPh: '첫 인사를 남겨주세요', enter: '숲으로 입장 🌿', entering: '입장 중...',
+    needName: '이름을 적어주세요', needMsg: '한마디를 적어주세요', fail: '전송 실패, 다시 눌러주세요',
+    glow: '큰 화면에서 내 이름이 노랗게 빛나요', move: '🕹 움직이기', drag: '노란 버튼을 끌어서 걸어 다녀요',
+    say: '💬 말하기', sayPh: '하고 싶은 말을 써 보세요', send: '보내기', poseT: '🙌 포즈 바꾸기', edit: '🎨 다시 꾸미기', home: '처음 화면',
+    slow: '조금만 천천히요 🙂', sent: '큰 화면에 말풍선이 떴어요!', gone: '캐릭터가 삭제됐어요. 다시 입장해 주세요',
+    backTo: n => '🎮 ' + n + ' 정령으로 돌아가기', newOne: '새 정령으로 입장하기', random: '🎲 랜덤', walk: '🚶 걷기 보기', posePv: '🙋 포즈 보기', done: '완료', editTitle: '정령 꾸미기',
+    quick: ['안녕하세요~ 👋', '반가워요!', '최고예요 💚', '야쿠시마 🌲', '축하해요! 🎉'],
+    cats: ['🌱 몸', '😊 얼굴', '🎀 꾸미기', '🙌 포즈·소품'],
+    secs: { color: '이끼 색', build: '체형', height: '키', head: '얼굴형', eyes: '눈', mouth: '입', cheek: '볼', headw: '머리 장식', accC: '장식 색', glasses: '안경', neck: '목 장식', pose: '포즈', item: '손에 든 소품' },
+    itemNote: '만세·폴짝 포즈일 땐 걸어 다닐 때만 소품이 보여요', itemToast: '이 포즈에선 걸을 때 소품이 보여요',
+    scan: 'QR 찍고 입장!', msgs: '💬 메시지', count: n => '참가자 ' + n + '명', full: '⛶ 전체화면', demo: '체험 모드'
+  }
+};
+const t = k => STR[LANG][k] !== undefined ? STR[LANG][k] : STR.en[k];
+
+/* ---------- 정령 꾸미기 ---------- */
 const CATS = [
-  { label: '💇 머리', secs: [{ k: 'hair', t: '헤어스타일', names: HAIR_NAMES, crop: 'head' }, { k: 'hairC', t: '머리 색', colors: HAIRC }] },
-  { label: '😊 얼굴', secs: [{ k: 'eyes', t: '눈', names: EYES_NAMES, crop: 'face' }, { k: 'mouth', t: '입', names: MOUTH_NAMES, crop: 'face' }, { k: 'glasses', t: '안경', names: GLASSES_NAMES, crop: 'face' }, { k: 'extra', t: '얼굴 꾸미기', names: EXTRA_NAMES, crop: 'face' }, { k: 'skin', t: '피부색', colors: SKIN }] },
-  { label: '👕 옷', secs: [{ k: 'outfit', t: '옷', names: OUTFIT_NAMES }, { k: 'clothC', t: '상의 색', colors: CLOTHC }, { k: 'pantsC', t: '하의·치마 색', colors: PANTSC }] },
-  { label: '🎩 모자', secs: [{ k: 'hat', t: '모자·머리 장식', names: HAT_NAMES, crop: 'head' }, { k: 'hatC', t: '모자 색', colors: CLOTHC }] },
-  { label: '🙌 포즈·소품', secs: [{ k: 'pose', t: '포즈', names: POSE_NAMES }, { k: 'item', t: '손에 든 소품', names: ITEM_NAMES, note: '만세·머리 하트·박수·허리 손 포즈일 땐 걸어 다닐 때만 소품이 보여요' }] }
+  { secs: [{ k: 'color', colors: MOSS }, { k: 'build' }, { k: 'height' }] },
+  { secs: [{ k: 'head', crop: 'head' }, { k: 'eyes', crop: 'head' }, { k: 'mouth', crop: 'head' }, { k: 'cheek', crop: 'head' }] },
+  { secs: [{ k: 'headw', crop: 'head' }, { k: 'accC', colors: ACCC }, { k: 'glasses', crop: 'head' }, { k: 'neck' }] },
+  { secs: [{ k: 'pose' }, { k: 'item', note: true }] }
 ];
 function mountBuilder(root, cfg) {
   root.innerHTML = ''; root.classList.add('builder');
   const prev = h('canvas', { class: 'pv' }), tabs = h('div', { class: 'tabs' }), body = h('div', { class: 'secs' });
   let cur = 0, f = 0, walk = false;
-  const walkBtn = h('button', { class: 'btn ghost mini', onclick: () => { walk = !walk; walkBtn.textContent = walk ? '🙋 포즈 보기' : '🚶 걷기 보기'; drawPrev(); } }, '🚶 걷기 보기');
-  root.append(h('div', { class: 'pvwrap stick' }, prev, h('div', { class: 'minirow' }, h('button', { class: 'btn ghost mini', onclick: () => { Object.assign(cfg, randCfg()); render(); } }, '🎲 랜덤'), walkBtn)), tabs, body);
-  const drawPrev = () => drawSpriteTo(prev, cfg, walk ? [1, 0, 2, 0][f % 4] : (Math.floor(f / 2) % 2 ? 'p1' : 'p0'), 6);
+  const walkBtn = h('button', { class: 'btn ghost mini', onclick: () => { walk = !walk; walkBtn.textContent = walk ? t('posePv') : t('walk'); drawPrev(); } }, t('walk'));
+  root.append(h('div', { class: 'pvwrap stick' }, prev, h('div', { class: 'minirow' }, h('button', { class: 'btn ghost mini', onclick: () => { Object.assign(cfg, randCfg()); render(); } }, t('random')), walkBtn)), tabs, body);
+  const drawPrev = () => drawSpriteTo(prev, cfg, walk ? [1, 0, 2, 0][f % 4] : (Math.floor(f / 2) % 2 ? 'p1' : 'p0'), 5);
   const iv = setInterval(() => { if (!prev.isConnected) { clearInterval(iv); return; } f++; drawPrev(); }, 220);
-  const pick = (k, i) => { cfg[k] = i; if (k === 'item' && i && !poseShowsItem(cfg.pose)) toast('이 포즈에선 걸을 때 소품이 보여요'); render(); };
+  const pick = (k, i) => { cfg[k] = i; if (k === 'item' && i && !poseShowsItem(cfg.pose)) toast(t('itemToast')); render(); };
   function render() {
     tabs.innerHTML = '';
-    CATS.forEach((c, i) => tabs.append(h('button', { class: 'tab' + (i === cur ? ' on' : ''), onclick: () => { cur = i; render(); } }, c.label)));
+    t('cats').forEach((c, i) => tabs.append(h('button', { class: 'tab' + (i === cur ? ' on' : ''), onclick: () => { cur = i; render(); } }, c)));
     body.style.minHeight = body.offsetHeight + 'px'; body.innerHTML = '';
     CATS[cur].secs.forEach(s => {
       const grid = h('div', { class: 'opts ' + (s.colors ? 'colors' : s.crop ? 'crops' : 'shapes') });
-      if (s.colors) s.colors.forEach((c, i) => grid.append(h('button', { class: 'sw' + (cfg[s.k] === i ? ' on' : ''), style: 'background:' + c, 'aria-label': s.t + ' ' + (i + 1), onclick: () => pick(s.k, i) })));
-      else s.names.forEach((nm, i) => {
+      if (s.colors) s.colors.forEach((c, i) => grid.append(h('button', { class: 'sw' + (cfg[s.k] === i ? ' on' : ''), style: 'background:' + c, 'aria-label': t('secs')[s.k] + ' ' + (i + 1), onclick: () => pick(s.k, i) })));
+      else NAMES[s.k][LANG].forEach((nm, i) => {
         const test = { ...cfg, [s.k]: i }; if (s.k === 'item') test.pose = 0;
-        const cv = h('canvas'); drawSpriteTo(cv, test, 'p0', s.crop === 'face' ? 4 : 3, s.crop ? CROPS[s.crop] : null);
+        const cv = h('canvas'); drawSpriteTo(cv, test, 'p0', s.crop ? 3 : 2, s.crop);
         grid.append(h('button', { class: 'op' + (cfg[s.k] === i ? ' on' : ''), onclick: () => pick(s.k, i) }, cv, h('span', {}, nm)));
       });
-      body.append(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, s.t), s.note ? h('div', { class: 'sec-n' }, s.note) : null, grid));
+      body.append(h('div', { class: 'sec' }, h('div', { class: 'sec-t' }, t('secs')[s.k]), s.note ? h('div', { class: 'sec-n' }, t('itemNote')) : null, grid));
     });
     body.style.minHeight = '';
     drawPrev();
@@ -409,21 +422,21 @@ function walker(getCfg, scale) {
 }
 function openBuilder(cfg, onDone) {
   const b = h('div'), sheet = h('div', { class: 'sheet' }), m = h('div', { class: 'modal' }, sheet);
-  sheet.append(h('h2', {}, '캐릭터 꾸미기'), b, h('button', { class: 'btn full', onclick: () => { m.remove(); onDone && onDone(); } }, '완료'));
+  sheet.append(h('h2', {}, t('editTitle')), b, h('button', { class: 'btn full', onclick: () => { m.remove(); onDone && onDone(); } }, t('done')));
   document.body.append(m); mountBuilder(b, cfg);
 }
 
 /* ---------- 저장소 (Firebase / 체험 모드) ---------- */
-const DEFAULT_SETTINGS = { title: '우리들의 방명록', subtitle: '셀카 대신, 나만의 픽셀 캐릭터로 입장해요!', hosts: [{ name: '주인공', cfg: { skin: 1, hair: 1, hairC: 0, eyes: 1, mouth: 5, extra: 1, outfit: 0, clothC: 0, pose: 1 } }], showPanel: true, showQR: true, randomBubbles: true, bubbleSec: 8 };
+const DEFAULT_SETTINGS = { title: 'Champions Energizer APAC 2026', subtitle: '', lang: 'en', hosts: [{ name: 'Aime', cfg: { color: 1, build: 1, height: 1, head: 0, eyes: 2, mouth: 1, cheek: 1, headw: 3, accC: 1, glasses: 0, neck: 0, pose: 2, item: 0 } }], showPanel: true, showQR: true, randomBubbles: true, bubbleSec: 8 };
 function fixSettings(raw) {
   raw = raw || {}; const s = Object.assign({}, DEFAULT_SETTINGS, raw);
   let hs = s.hosts; if (hs && !Array.isArray(hs)) hs = Object.values(hs);
   if (raw.hostCount === 0) hs = [];
-  s.hosts = (hs || []).slice(0, 2).map(x => ({ name: String(x.name || '').slice(0, 10), cfg: normCfg(x.cfg) }));
-  s.bubbleSec = +s.bubbleSec || 8; return s;
+  s.hosts = (hs || []).slice(0, 2).map(x => ({ name: String(x.name || '').slice(0, 16), cfg: normCfg(x.cfg) }));
+  s.bubbleSec = +s.bubbleSec || 8; s.lang = s.lang === 'ko' ? 'ko' : 'en'; return s;
 }
 const clampDir = v => Math.max(-1, Math.min(1, Math.round(+v || 0)));
-function cleanGuest(d) { const dir = d.dir || {}; return { id: d.id, name: String(d.name || '').slice(0, 10), msg: String(d.msg || '').slice(0, 40), cfg: normCfg(d.cfg), t: +d.t || 0, mt: +d.mt || +d.t || 0, dir: { dx: clampDir(dir.dx), dy: clampDir(dir.dy) } }; }
+function cleanGuest(d) { const dir = d.dir || {}; return { id: d.id, name: String(d.name || '').slice(0, 16), msg: String(d.msg || '').slice(0, 40), cfg: normCfg(d.cfg), t: +d.t || 0, mt: +d.mt || +d.t || 0, dir: { dx: clampDir(dir.dx), dy: clampDir(dir.dy) } }; }
 const Store = {
   fb: false, listeners: [],
   async init() {
@@ -477,7 +490,7 @@ const Store = {
     Object.assign(all[id], patch); this._set('guests', all); this._send({ type: 'update', g: { id, ...all[id] } });
   },
   addGuest(g) {
-    const now = Date.now(), data = { name: g.name.slice(0, 10), msg: g.msg.slice(0, 40), cfg: normCfg(g.cfg), t: now, mt: now };
+    const now = Date.now(), data = { name: g.name.slice(0, 16), msg: g.msg.slice(0, 40), cfg: normCfg(g.cfg), t: now, mt: now };
     if (this.fb) { const r = this.ref('guests').push(); return r.set(data).then(() => r.key); }
     const id = 'g' + now.toString(36) + Math.random().toString(36).slice(2, 6);
     const all = this._get('guests', {}); all[id] = data; this._set('guests', all);
@@ -493,39 +506,62 @@ const Store = {
   }
 };
 
-/* ---------- 배경 (꽃길 정원) ---------- */
+/* ---------- 배경 (야쿠시마 삼나무 숲) ---------- */
 function makeBackground(W, H) {
   const c = document.createElement('canvas'); c.width = W; c.height = H;
-  const x = c.getContext('2d'), r = mulberry32(20261008);
+  const x = c.getContext('2d'), r = mulberry32(20261010);
   const P = (px, py, col, w = 1, hh = 1) => { x.fillStyle = col; x.fillRect(Math.round(px), Math.round(py), w, hh); };
-  const FL = ['#ffffff', '#ffffff', '#f7a8c4', '#ffd1dc', '#fff3a0', '#f48fb1', '#ffb37a'];
-  const fc = () => FL[Math.floor(r() * FL.length)];
-  const flower = (fx, fy, col) => { fx = Math.round(fx); fy = Math.round(fy); P(fx + 1, fy + 2, '#4c8a2e'); P(fx, fy - 1, col); P(fx - 1, fy, col); P(fx + 1, fy, col); P(fx, fy + 1, col); P(fx, fy, '#f2c94c'); };
-  const lav = (lx, ly) => { lx = Math.round(lx); ly = Math.round(ly); P(lx, ly - 2, '#4c8a2e', 1, 4); P(lx, ly - 8, '#8e74d0', 1, 6); P(lx - 1, ly - 7, '#a993e2', 1, 3); P(lx + 1, ly - 6, '#7a62bf', 1, 2); };
-  const tree = (tx, ty, rad) => {
-    P(tx - 3, ty + rad - 6, '#6e4a2b', 7, 16); P(tx - 3, ty + rad - 6, '#57391f', 2, 16);
-    const blobs = [[0, -rad * .4, rad * .75], [-rad * .6, rad * .3, rad * .7], [rad * .6, rad * .3, rad * .7], [0, 0, rad]];
-    for (const [bx, by, br0] of blobs) { const br = Math.round(br0); for (let dy = -br; dy <= br; dy++) for (let dx = -br; dx <= br; dx++) if (dx * dx + dy * dy <= br * br) { const l = (dx + dy) / (br * 2); P(tx + bx + dx, ty + by + dy, l < -.35 ? '#5cb350' : l > .3 ? '#2c6e2e' : '#3f8f3c'); } }
-    for (let i = 0; i < 40; i++) P(tx + (r() - .5) * rad * 1.6, ty + (r() - .5) * rad * 1.4, '#6cc25e');
+  const ellF = (cx, cy, rx, ry, colFn) => { for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let xx = Math.floor(cx - rx); xx <= cx + rx; xx++) if (((xx - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1) P(xx, y, typeof colFn === 'function' ? colFn(xx, y) : colFn); };
+  const pick = a => a[Math.floor(r() * a.length)];
+  /* 하늘·안개 숲 */
+  for (let y = 0; y < 110; y++) { const k = y / 110; x.fillStyle = `rgb(${Math.round(36 + 40 * k)},${Math.round(62 + 50 * k)},${Math.round(52 + 22 * k)})`; x.fillRect(0, y, W, 1); }
+  for (let i = 0; i < 16; i++) { const tx = r() * W, tw = 6 + r() * 10; x.fillStyle = `rgba(150,170,155,${.18 + r() * .15})`; x.fillRect(Math.round(tx), 0, Math.round(tw), 100 + r() * 10); }
+  /* 이끼 바닥 */
+  const GR = ['#4f7d2e', '#5a8a34', '#46722a', '#61933a', '#3f6a26'];
+  for (let y = 92; y < H; y++) for (let xx = 0; xx < W; xx += 1) {
+    const d = Math.abs(xx - W / 2) / (W / 2), v = r();
+    P(xx, y, v < .5 ? (d > .75 && v < .25 ? '#3a6223' : GR[0]) : pick(GR));
+  }
+  for (let i = 0; i < 900; i++) { const gx = r() * W, gy = 95 + r() * (H - 95); P(gx, gy, pick(['#7fb24a', '#6fa040', '#8cc455', '#355c1f'])); }
+  /* 나무 줄기 */
+  const trunk = (cx, top, base, w, col, near) => {
+    const dkc = shade(col, -.3), ltc = shade(col, .22);
+    for (let y = top; y <= base; y++) {
+      const flare = Math.max(0, (y - (base - 28)) / 28), ww = w * (1 + flare * flare * .9) + Math.sin(y * .21 + cx) * 1.3;
+      const x0 = Math.round(cx - ww / 2), x1 = Math.round(cx + ww / 2);
+      for (let xx = x0; xx <= x1; xx++) {
+        const u = (xx - x0) / Math.max(1, x1 - x0), stripe = Math.sin(xx * 1.7 + Math.sin(y * .09 + xx) * 2) > .55;
+        P(xx, y, stripe ? dkc : u < .28 ? ltc : u > .78 ? dkc : col);
+      }
+    }
+    const roots = near ? 5 : 3;
+    for (let k = 0; k < roots; k++) {
+      const dir = k % 2 ? 1 : -1; let rx = cx + dir * (w * .3 + r() * w * .3), ry = base - 3 - r() * 6, th = 4 + r() * 3;
+      for (let s = 0; s < 22 + r() * 18 && th > .8; s++) { P(rx - th / 2, ry, dkc, Math.ceil(th), 2); P(rx - th / 2, ry, col, Math.max(1, Math.ceil(th) - 1), 1); rx += dir * (1.2 + r()); ry += .35 + r() * .3; th -= .12; }
+    }
+    for (let i = 0; i < (near ? 26 : 12); i++) { const my = top + r() * (base - top), mx = cx + (r() - .5) * w * .8; ellF(mx, my, 2 + r() * 3, 1.5 + r() * 2.5, () => pick(['#6fa040', '#7fb24a', '#5a8a34'])); }
   };
-  x.fillStyle = '#78b84a'; x.fillRect(0, 0, W, H);
-  const GS = ['#84c257', '#6ba63f', '#8fcb61', '#72ae45'];
-  for (let i = 0; i < 4000; i++) P(r() * W, r() * H, GS[i % 4]);
-  for (let i = 0; i < 300; i++) { const gx = r() * W, gy = r() * H; P(gx, gy, '#5e9a36'); P(gx + 1, gy - 1, '#5e9a36'); P(gx + 2, gy, '#5e9a36'); }
-  for (let yy = 44; yy <= 94; yy++) for (let xx = 166; xx <= 314; xx++) { const e = ((xx - 240) / 72) ** 2 + ((yy - 72) / 21) ** 2; if (e < 1) P(xx, yy, r() < .08 ? '#d9c896' : '#eadfb9'); }
-  for (let yy = 86; yy < H; yy++) { const w = Math.round(Math.sin(yy * .13) * 1.3); for (let xx = 213 + w; xx <= 267 - w; xx++) P(xx, yy, r() < .07 ? '#d9c896' : '#eadfb9'); }
-  tree(34, 34, 24); tree(448, 36, 24); tree(118, 12, 16); tree(364, 12, 16);
-  for (let i = 0; i < 90; i++) lav(i % 2 ? 8 + r() * 70 : W - 8 - r() * 70, 100 + r() * 165);
-  for (let i = 0; i < 170; i++) { const fx = r() * W, fy = 60 + r() * (H - 60); if (fx > 205 && fx < 275) continue; flower(fx, fy, fc()); }
-  for (let yy = 96; yy < H + 4; yy += 5) { flower(208 + r() * 3, yy + r() * 2, fc()); flower(270 + r() * 3, yy + r() * 2, fc()); if (r() < .5) { P(206 + r() * 4, yy + 3, '#4c8a2e', 2, 1); P(271 + r() * 4, yy + 3, '#4c8a2e', 2, 1); } }
-  // 꽃 아치
-  P(212, 72, '#efe7d3', 56, 2); P(208, 74, '#e2d8bf', 64, 2);
-  P(202, 26, '#cfc5ad', 6, 46); P(203, 26, '#f4efe4', 4, 46); P(272, 26, '#cfc5ad', 6, 46); P(273, 26, '#f4efe4', 4, 46);
-  for (let i = 0; i < 5; i++) { P(208 + i, 24 + i * 2, 'rgba(255,255,255,.7)', 1, 44 - i * 2); P(271 - i, 24 + i * 2, 'rgba(255,255,255,.7)', 1, 44 - i * 2); }
-  for (let a = 0; a <= Math.PI + .01; a += 0.09) { const ax = 240 + Math.cos(a) * 36, ay = 28 - Math.sin(a) * 22; P(ax - 2, ay - 1, '#3f8f3c', 5, 4); P(ax - 1, ay - 2, '#56a84c', 3, 1); }
-  for (let a = 0; a <= Math.PI + .01; a += 0.16) { const ax = 240 + Math.cos(a) * 36, ay = 28 - Math.sin(a) * 22; flower(ax + (r() - .5) * 3, ay + (r() - .5) * 2, fc()); }
-  for (let yy = 30; yy < 70; yy += 7) { P(200, yy, '#3f8f3c', 3, 4); flower(201, yy + 1, fc()); P(277, yy + 3, '#3f8f3c', 3, 4); flower(278, yy + 4, fc()); }
-  P(238, 9, '#e8c14a', 4, 4); P(239, 13, '#b8912a', 2, 1);
+  trunk(62, 0, 104, 22, '#7c8c7e', false); trunk(498, 0, 102, 24, '#7c8c7e', false);
+  trunk(170, 0, 98, 16, '#8a978a', false); trunk(392, 0, 99, 17, '#8a978a', false);
+  trunk(280, 0, 104, 64, '#6e5a46', true);
+  trunk(16, 0, 150, 40, '#5f4d3c', true); trunk(548, 0, 152, 42, '#5f4d3c', true);
+  /* 숲 지붕 */
+  for (let i = 0; i < 70; i++) { const lx = r() * W, ly = r() * 24; ellF(lx, ly, 10 + r() * 16, 5 + r() * 7, () => pick(['#1f3d22', '#24482a', '#2d5531', '#1a3320'])); }
+  /* 공터 */
+  ellF(280, 118, 120, 22, () => pick(['#6fa040', '#7fb24a', '#679a3c', '#78ab45']));
+  /* 나무 데크 길 */
+  for (let y = 124; y < H; y++) {
+    const k = (y - 124) / (H - 124), half = 26 + k * 22, x0 = 280 - half, x1 = 280 + half;
+    const gap = (y - 124) % 7 === 0;
+    for (let xx = Math.round(x0); xx <= x1; xx++) P(xx, y, gap ? '#4a3626' : (r() < .12 ? '#a4825a' : (xx < x0 + 2 || xx > x1 - 2 ? '#6e5236' : '#957250')));
+  }
+  /* 바위·고사리·버섯·꽃 */
+  const rock = (rx, ry, s) => { ellF(rx, ry, 7 * s, 4.5 * s, (xx, y) => y < ry - s ? pick(['#7fb24a', '#6fa040']) : (xx < rx ? '#8d958a' : '#6d7569')); };
+  [[72, 140, 1.4], [500, 150, 1.6], [150, 250, 1.2], [420, 270, 1.3], [34, 230, 1.5], [530, 260, 1.2], [200, 168, .9], [370, 190, .9]].forEach(([a, b, s]) => rock(a, b, s));
+  const fern = (fx, fy, s) => { for (let i = 0; i < 9 * s; i++) { const yy = fy - i, xx = fx + Math.sin(i * .2) * 2; P(xx, yy, '#3f7a2a'); const len = (9 * s - i) * .5; for (let j = 1; j <= len; j++) { P(xx - j, yy + j * .4, '#5fae3c'); P(xx + j, yy + j * .4, '#5fae3c'); } } };
+  for (let i = 0; i < 46; i++) { const fx = r() * W, fy = 110 + r() * (H - 110); if (Math.abs(fx - 280) < 60 && fy > 120) continue; fern(fx, fy, .8 + r() * .8); }
+  for (let i = 0; i < 26; i++) { const mx = r() * W, my = 110 + r() * (H - 110); if (Math.abs(mx - 280) < 55 && my > 120) continue; P(mx, my, '#e8dcc0', 1, 2); P(mx - 1, my - 1, pick(['#d9433a', '#e8a33d', '#f2e3c8']), 3, 1); }
+  for (let i = 0; i < 70; i++) { const fx = r() * W, fy = 105 + r() * (H - 105); if (Math.abs(fx - 280) < 52 && fy > 122) continue; P(fx, fy, pick(['#ffffff', '#f6f0c8', '#e8f2d0'])); }
   return c;
 }
 
@@ -533,32 +569,34 @@ function makeBackground(W, H) {
 function startScreen() {
   document.body.className = 'screen'; app.innerHTML = '';
   const cv = h('canvas', { class: 'world' });
-  const qrInner = h('div', { class: 'qr' });
-  const qr = h('div', { class: 'qrbox' }, qrInner, h('div', { class: 'qrt' }, 'QR 찍고 입장!'));
+  const qrInner = h('div', { class: 'qr' }), qrT = h('div', { class: 'qrt' });
+  const qr = h('div', { class: 'qrbox' }, qrInner, qrT);
   const tt = h('span', { class: 'tt' }), cnt = h('span', { class: 'cnt' });
-  const fsBtn = h('button', { class: 'fsbtn', onclick: () => { const d = document.documentElement; if (!document.fullscreenElement && d.requestFullscreen) d.requestFullscreen(); else if (document.exitFullscreen) document.exitFullscreen(); } }, '⛶ 전체화면');
+  const fsBtn = h('button', { class: 'fsbtn', onclick: () => { const d = document.documentElement; if (!document.fullscreenElement && d.requestFullscreen) d.requestFullscreen(); else if (document.exitFullscreen) document.exitFullscreen(); } });
   const stage = h('div', { class: 'stage' }, cv, qr, h('div', { class: 'titlebar' }, tt, cnt), fsBtn);
-  if (!Store.fb) stage.append(h('div', { class: 'demotag' }, '체험 모드'));
-  const cards = h('div', { class: 'cards' });
-  const panel = h('div', { class: 'panel' }, h('div', { class: 'panel-h' }, '💌 축하 메시지'), cards);
+  const demo = h('div', { class: 'demotag' }); if (!Store.fb) stage.append(demo);
+  const cards = h('div', { class: 'cards' }), panelH = h('div', { class: 'panel-h' });
+  const panel = h('div', { class: 'panel' }, panelH, cards);
   app.append(stage, panel);
   try { new QRCode(qrInner, { text: urlFor('guest'), width: 256, height: 256, colorDark: '#1d1b22', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch (e) { qr.style.display = 'none'; }
 
-  const WW = 480, WH = 270, bg = makeBackground(WW, WH), ctx = cv.getContext('2d');
+  const WW = 560, WH = 315, bg = makeBackground(WW, WH), ctx = cv.getContext('2d');
   let S = 1, OX = 0, OY = 0, settings = fixSettings(null), hostEnts = [];
-  const guests = new Map(), cardList = [], hearts = [];
+  const guests = new Map(), cardList = [], sparks = [];
+  const spores = Array.from({ length: 46 }, () => ({ x: Math.random() * WW, y: Math.random() * WH, v: .05 + Math.random() * .12, p: Math.random() * 6.28 }));
   function resize() { const r = stage.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.max(1, Math.round(r.width * d)); cv.height = Math.max(1, Math.round(r.height * d)); S = Math.max(cv.width / WW, cv.height / WH); OX = (cv.width - WW * S) / 2; OY = (cv.height - WH * S) / 2; }
   window.addEventListener('resize', resize); resize();
-  function vis() { return { x0: Math.max(14, -OX / S + 14), x1: Math.min(WW - 14, (cv.width - OX) / S - 14), y0: Math.max(96, -OY / S + 40), y1: Math.min(WH - 8, (cv.height - OY) / S - 8) }; }
+  function vis() { return { x0: Math.max(18, -OX / S + 18), x1: Math.min(WW - 18, (cv.width - OX) / S - 18), y0: Math.max(132, -OY / S + 50), y1: Math.min(WH - 8, (cv.height - OY) / S - 8) }; }
   function randTarget() { const v = vis(); return { x: v.x0 + Math.random() * (v.x1 - v.x0), y: v.y0 + Math.random() * (v.y1 - v.y0) }; }
+  const applyTexts = () => { qrT.textContent = t('scan'); panelH.textContent = t('msgs'); fsBtn.textContent = t('full'); demo.textContent = t('demo'); updateCount(); };
 
   Store.onSettings(s => {
-    settings = s; tt.textContent = s.title;
+    settings = s; LANG = s.lang; tt.textContent = s.title;
     panel.style.display = s.showPanel ? 'flex' : 'none'; qr.style.display = s.showQR ? '' : 'none';
-    hostEnts = s.hosts.map((x, i) => ({ name: x.name, cfg: x.cfg, host: true, frame: 0, phase: i * .5, x: s.hosts.length === 2 ? (i ? 252 : 228) : 240, y: 74, bubbleUntil: 0 }));
-    resize();
+    hostEnts = s.hosts.map((x, i) => ({ name: x.name, cfg: x.cfg, host: true, frame: 0, phase: i * .5, x: s.hosts.length === 2 ? (i ? 294 : 266) : 280, y: 120, bubbleUntil: 0 }));
+    applyTexts(); resize();
   });
-  const updateCount = () => { cnt.textContent = '하객 ' + guests.size + '명'; };
+  function updateCount() { cnt.textContent = t('count')(guests.size); }
   let crt; const schedCards = () => { clearTimeout(crt); crt = setTimeout(renderCards, 60); };
   function renderCards() {
     cards.innerHTML = ''; const now = Date.now();
@@ -572,7 +610,7 @@ function startScreen() {
     if (guests.has(d.id)) return;
     const g = { ...d, frame: 0, walk: 0, phase: Math.random() * 10, bubbleUntil: 0, dirAt: 0 };
     if (initial) { const p = randTarget(); g.x = p.x; g.y = p.y; g.state = 'idle'; g.timer = Math.random() * 600; }
-    else { g.x = WW / 2 + (Math.random() * 20 - 10); g.y = WH + 34; g.tx = WW / 2 + (Math.random() * 24 - 12); g.ty = 102 + Math.random() * 12; g.state = 'enter'; g.bubbleUntil = Date.now() + settings.bubbleSec * 1000; }
+    else { g.x = WW / 2 + (Math.random() * 16 - 8); g.y = WH + 40; g.tx = WW / 2 + (Math.random() * 30 - 15); g.ty = 136 + Math.random() * 14; g.state = 'enter'; g.bubbleUntil = Date.now() + settings.bubbleSec * 1000; }
     guests.set(g.id, g); addCard(g, !initial); updateCount();
   }, id => {
     guests.delete(id); for (let i = cardList.length - 1; i >= 0; i--) if (cardList[i].gid === id) cardList.splice(i, 1);
@@ -586,14 +624,14 @@ function startScreen() {
     else if (was.dx || was.dy) { if (g.state === 'ctrl') { g.state = 'idle'; g.timer = 900; } }
     schedCards();
   });
-  updateCount();
+  applyTexts();
 
   function step(g, dt) {
     if (g.state === 'ctrl') {
       const d = g.dir || { dx: 0, dy: 0 };
       if ((!d.dx && !d.dy) || Date.now() - g.dirAt > 8000) { g.state = 'idle'; g.timer = 900; g.frame = 0; return; }
       const len = Math.hypot(d.dx, d.dy), sp = .8 * dt, v = vis();
-      g.x = clamp(g.x + d.dx / len * sp, v.x0, v.x1); g.y = clamp(g.y + d.dy / len * sp, Math.max(58, v.y0 - 40), v.y1);
+      g.x = clamp(g.x + d.dx / len * sp, v.x0, v.x1); g.y = clamp(g.y + d.dy / len * sp, Math.max(108, v.y0 - 30), v.y1);
       g.walk += dt; g.frame = [1, 0, 2, 0][Math.floor(g.walk / 6) % 4]; return;
     }
     if (g.state === 'enter' || g.state === 'roam' || g.state === 'wander') {
@@ -605,110 +643,122 @@ function startScreen() {
       g.frame = 0; g.timer -= dt;
       if (g.timer <= 0) {
         if (g.state === 'greet') { const p = randTarget(); g.tx = p.x; g.ty = p.y; g.state = 'roam'; }
-        else { const v = vis(); g.tx = clamp(g.x + (Math.random() * 50 - 25), v.x0, v.x1); g.ty = clamp(g.y + (Math.random() * 30 - 15), v.y0, v.y1); g.state = 'wander'; }
+        else { const v = vis(); g.tx = clamp(g.x + (Math.random() * 60 - 30), v.x0, v.x1); g.ty = clamp(g.y + (Math.random() * 36 - 18), v.y0, v.y1); g.state = 'wander'; }
       }
     }
   }
   const moving = e => e.state === 'enter' || e.state === 'roam' || e.state === 'wander' || e.state === 'ctrl';
   const FONT = '"Galmuri11","Apple SD Gothic Neo",sans-serif';
   function wrap(text, maxW) { const lines = []; let line = ''; for (const ch of [...text]) { if (ctx.measureText(line + ch).width > maxW && line) { lines.push(line); line = ch.trim() ? ch : ''; } else line += ch; } if (line) lines.push(line); return lines.slice(0, 4); }
-  function drawBubble(e) {
-    ctx.font = '6px ' + FONT; const lines = wrap(e.msg, 84), lh = 8;
+  function drawBubble(e, topY) {
+    ctx.font = '6px ' + FONT; const lines = wrap(e.msg, 90), lh = 8;
     const w = Math.ceil(Math.max(...lines.map(l => ctx.measureText(l).width))) + 10, hh = lines.length * lh + 5;
     const ex = Math.round(e.x), v = { a: -OX / S + 2, b: (cv.width - OX) / S - 2 };
-    const bx = Math.round(clamp(ex - w / 2, v.a, v.b - w)), by = Math.round(e.y - 40 - hh);
+    const bx = Math.round(clamp(ex - w / 2, v.a, v.b - w)), by = Math.round(topY - 6 - hh);
     ctx.fillStyle = '#1d1b22'; ctx.fillRect(bx - 1, by - 1, w + 2, hh + 2); ctx.fillRect(ex - 3, by + hh, 6, 2); ctx.fillRect(ex - 2, by + hh + 2, 4, 2);
     ctx.fillStyle = '#fff'; ctx.fillRect(bx, by, w, hh); ctx.fillRect(ex - 2, by + hh, 4, 1); ctx.fillRect(ex - 1, by + hh + 1, 2, 2);
     ctx.fillStyle = '#2a2630'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     lines.forEach((l, i) => ctx.fillText(l, bx + w / 2, by + 3 + i * lh));
   }
-  const HEART = ['.X.X.', 'XXXXX', '.XXX.', '..X..'];
-  let last = performance.now(), nextRand = 0, nextHeart = 0, tick = 0;
-  function loop(t) {
-    const dt = Math.min(3, (t - last) / 16.67); last = t; tick += dt; const now = Date.now();
+  const SPARK = ['.X.', 'XXX', '.X.'];
+  let last = performance.now(), nextRand = 0, nextSpark = 0, tick = 0;
+  function loop(tm) {
+    const dt = Math.min(3, (tm - last) / 16.67); last = tm; tick += dt; const now = Date.now();
     for (const g of guests.values()) step(g, dt);
     if (settings.randomBubbles && now > nextRand) {
       nextRand = now + 3500; const all = [...guests.values()];
       if (all.filter(g => g.bubbleUntil > now).length < 4) { const c = all.filter(g => g.state === 'idle' && g.bubbleUntil < now && g.msg); if (c.length) c[ri(c.length)].bubbleUntil = now + 5000; }
     }
-    if (hostEnts.length && now > nextHeart) { nextHeart = now + 900; const hx = hostEnts.reduce((a, e) => a + e.x, 0) / hostEnts.length; hearts.push({ x: hx + (Math.random() * 24 - 12), y: 40, life: 0, c: Math.random() < .5 ? '#ff6b9a' : '#ffa3c0' }); }
-    for (let i = hearts.length - 1; i >= 0; i--) { const p = hearts[i]; p.life += dt; p.y -= .22 * dt; p.x += Math.sin(p.life / 10) * .15; if (p.life > 150) hearts.splice(i, 1); }
-    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#78b84a'; ctx.fillRect(0, 0, cv.width, cv.height);
+    if (hostEnts.length && now > nextSpark) { nextSpark = now + 700; const hx = hostEnts.reduce((a, e) => a + e.x, 0) / hostEnts.length; sparks.push({ x: hx + (Math.random() * 40 - 20), y: 92, life: 0, c: Math.random() < .5 ? '#fff6a8' : '#c8ff9a' }); }
+    for (let i = sparks.length - 1; i >= 0; i--) { const p = sparks[i]; p.life += dt; p.y -= .2 * dt; p.x += Math.sin(p.life / 12) * .15; if (p.life > 160) sparks.splice(i, 1); }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#3f6a26'; ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.setTransform(S, 0, 0, S, OX, OY); ctx.imageSmoothingEnabled = false; ctx.drawImage(bg, 0, 0);
+    /* 빛줄기 */
+    for (let i = 0; i < 4; i++) {
+      const a = .05 + .03 * Math.sin(tick / 90 + i * 1.7), x0 = 120 + i * 110;
+      ctx.fillStyle = `rgba(255,250,205,${a})`; ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0 + 26, 0); ctx.lineTo(x0 - 40, WH); ctx.lineTo(x0 - 90, WH); ctx.closePath(); ctx.fill();
+    }
     const ents = hostEnts.concat([...guests.values()]).sort((a, b) => a.y - b.y);
+    const tops = new Map();
     for (const e of ents) {
       const mv = moving(e), pfr = Math.floor(tick / 24 + e.phase) % 2 ? 'p1' : 'p0';
       let bob = 0;
       if (e.state === 'greet') bob = -Math.round(Math.abs(Math.sin(e.timer / 7)) * 3);
-      else if (!mv && POSES[e.cfg.pose].hop) bob = pfr === 'p1' ? -2 : 0;
+      else if (!mv && POSES[e.cfg.pose].hop) bob = pfr === 'p1' ? -3 : 0;
       else if (!mv) bob = Math.floor(tick / 40 + e.phase) % 2 ? 1 : 0;
-      const ex = Math.round(e.x), ey = Math.round(e.y);
-      ctx.fillStyle = 'rgba(20,50,10,.25)'; ctx.fillRect(ex - 6, ey - 1, 12, 2);
-      ctx.drawImage(getSprite(e.cfg, mv ? e.frame : pfr), ex - 13, ey - 31 + bob);
+      const ex = Math.round(e.x), ey = Math.round(e.y), spr = getSprite(e.cfg, mv ? e.frame : pfr), sw = Math.round(5 * [.72, 1, 1.3, 1.6][e.cfg.build]) + 3;
+      ctx.fillStyle = 'rgba(20,40,10,.3)'; ctx.fillRect(ex - sw, ey - 1, sw * 2, 2);
+      ctx.drawImage(spr, ex - CX, ey - FY + bob);
+      tops.set(e, ey - FY + bob + spr.top);
     }
-    for (const p of hearts) { ctx.fillStyle = p.c; HEART.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') ctx.fillRect(Math.round(p.x) + i, Math.round(p.y) + j, 1, 1); })); }
+    /* 반딧불 포자 */
+    for (const s of spores) {
+      s.y -= s.v * dt; s.p += .03 * dt; if (s.y < -4) { s.y = WH + 4; s.x = Math.random() * WW; }
+      const sx = Math.round(s.x + Math.sin(s.p) * 3), sy = Math.round(s.y), a = .45 + .4 * Math.sin(s.p * 1.3);
+      ctx.fillStyle = `rgba(232,255,176,${a * .3})`; ctx.fillRect(sx - 1, sy - 1, 3, 3);
+      ctx.fillStyle = `rgba(250,255,210,${a})`; ctx.fillRect(sx, sy, 1, 1);
+    }
+    for (const p of sparks) { ctx.fillStyle = p.c; SPARK.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') ctx.fillRect(Math.round(p.x) + i, Math.round(p.y) + j, 1, 1); })); }
     ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1d1b22';
     for (const e of ents) {
       if (!e.name) continue;
       ctx.font = (e.host ? '6px ' : '5px ') + FONT; ctx.lineWidth = e.host ? 2 : 1.5;
-      ctx.strokeText(e.name, Math.round(e.x), Math.round(e.y) + 1); ctx.fillStyle = e.host ? '#ffd257' : (e.state === 'ctrl' ? '#ffd257' : '#fff'); ctx.fillText(e.name, Math.round(e.x), Math.round(e.y) + 1);
+      ctx.strokeText(e.name, Math.round(e.x), Math.round(e.y) + 1); ctx.fillStyle = e.host || e.state === 'ctrl' ? '#ffd257' : '#fff'; ctx.fillText(e.name, Math.round(e.x), Math.round(e.y) + 1);
     }
-    for (const e of ents) if (e.bubbleUntil > now && e.msg) drawBubble(e);
+    for (const e of ents) if (e.bubbleUntil > now && e.msg) drawBubble(e, tops.get(e));
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
   if (document.fonts) document.fonts.load('10px Galmuri11').catch(() => { });
 }
 
-/* ---------- 하객(폰) 화면 ---------- */
-function startGuest() {
+/* ---------- 참가자(폰) 화면 ---------- */
+async function startGuest() {
   document.body.className = 'mobile';
-  const ME_KEY = 'pixelguest_' + ROOM + '_me';
+  const ME_KEY = 'pixelguest_' + ROOM + '_me2';
   const loadMe = () => { try { return JSON.parse(localStorage.getItem(ME_KEY) || 'null'); } catch (e) { return null; } };
   const saveMe = v => { try { v ? localStorage.setItem(ME_KEY, JSON.stringify(v)) : localStorage.removeItem(ME_KEY); } catch (e) { } };
   let settings = fixSettings(null), cfg = randCfg(), name = '', msg = '', myId = null;
   const saved = loadMe();
   if (saved && saved.id) { myId = saved.id; name = saved.name || ''; cfg = normCfg(saved.cfg); }
   const wrap = h('div', { class: 'phone' }); app.innerHTML = ''; app.append(wrap);
-  Store.onSettings(s => { settings = s; wrap.querySelectorAll('.g-t').forEach(e => e.textContent = s.title); wrap.querySelectorAll('.g-s').forEach(e => e.textContent = s.subtitle); });
+  await new Promise(res => { let first = true; Store.onSettings(s => { settings = s; LANG = s.lang; document.documentElement.lang = LANG; if (first) { first = false; res(); } else { wrap.querySelectorAll('.g-t').forEach(e => e.textContent = s.title); } }); setTimeout(res, 2500); });
   const W = sc => walker(() => cfg, sc);
   function intro() {
-    wrap.innerHTML = ''; const w = W(6); w.className = 'pv';
-    wrap.append(h('div', { class: 'g-title g-t', style: 'margin-top:20px' }, settings.title), h('div', { class: 'g-sub g-s' }, settings.subtitle),
-      h('div', { class: 'pvwrap', style: 'margin:10px 0' }, w, h('div', { class: 'g-sub' }, '① 캐릭터 꾸미기 → ② 축하 한마디 → ③ 큰 화면에서 움직이며 대화!')),
-      myId ? h('button', { class: 'btn full', onclick: play }, '🎮 ' + name + ' 캐릭터로 돌아가기') : null,
-      h('button', { class: 'btn full' + (myId ? ' ghost' : ''), onclick: () => { if (myId) { myId = null; saveMe(null); cfg = randCfg(); name = ''; } build(); } }, myId ? '새 캐릭터로 입장하기' : '캐릭터 만들기 →'));
+    wrap.innerHTML = ''; const w = W(5); w.className = 'pv';
+    wrap.append(h('div', { class: 'g-title g-t', style: 'margin-top:20px' }, settings.title), h('div', { class: 'g-sub' }, settings.subtitle || t('sub')),
+      h('div', { class: 'pvwrap', style: 'margin:10px 0' }, w, h('div', { class: 'g-sub' }, t('steps'))),
+      myId ? h('button', { class: 'btn full', onclick: play }, t('backTo')(name)) : null,
+      h('button', { class: 'btn full' + (myId ? ' ghost' : ''), onclick: () => { if (myId) { myId = null; saveMe(null); cfg = randCfg(); name = ''; } build(); } }, myId ? t('newOne') : t('create')));
   }
   function build() {
     wrap.innerHTML = ''; const b = h('div');
-    wrap.append(h('div', { class: 'g-title' }, '나랑 닮게 꾸며요'), b, h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: intro }, '← 처음'), h('button', { class: 'btn', onclick: write }, '다음 →')));
+    wrap.append(h('div', { class: 'g-title' }, t('build')), b, h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: intro }, t('back')), h('button', { class: 'btn', onclick: write }, t('next'))));
     mountBuilder(b, cfg);
   }
   function write() {
-    wrap.innerHTML = ''; const w = W(4); w.style.cssText = 'height:128px;width:auto';
-    const ni = h('input', { class: 'in', maxlength: '10', placeholder: '이름 (예: 김하늘)' }); ni.value = name;
-    const mi = h('textarea', { class: 'in', maxlength: '40', placeholder: '첫 인사를 남겨주세요' }); mi.value = msg;
+    wrap.innerHTML = ''; const w = W(3); w.style.cssText = 'height:130px;width:auto';
+    const ni = h('input', { class: 'in', maxlength: '16', placeholder: t('namePh') }); ni.value = name;
+    const mi = h('textarea', { class: 'in', maxlength: '40', placeholder: t('msgPh') }); mi.value = msg;
     const cnt = h('div', { class: 'cnt-hint' }, msg.length + '/40'); mi.addEventListener('input', () => { cnt.textContent = mi.value.length + '/40'; });
-    const go = h('button', { class: 'btn' }, '입장하기 🎉');
+    const go = h('button', { class: 'btn' }, t('enter'));
     go.onclick = async () => {
       name = ni.value.trim(); msg = mi.value.trim();
-      if (!name) { ni.focus(); toast('이름을 적어주세요'); return; }
-      if (!msg) { mi.focus(); toast('한마디를 적어주세요'); return; }
-      go.disabled = true; go.textContent = '입장 중...';
+      if (!name) { ni.focus(); toast(t('needName')); return; }
+      if (!msg) { mi.focus(); toast(t('needMsg')); return; }
+      go.disabled = true; go.textContent = t('entering');
       try { myId = await Store.addGuest({ name, msg, cfg: { ...cfg } }); saveMe({ id: myId, name, cfg }); play(); }
-      catch (e) { go.disabled = false; go.textContent = '입장하기 🎉'; toast('전송 실패, 다시 눌러주세요'); }
+      catch (e) { go.disabled = false; go.textContent = t('enter'); toast(t('fail')); }
     };
-    wrap.append(h('div', { class: 'g-title' }, '첫 인사'), h('div', { class: 'center' }, w), h('label', { class: 'f' }, '이름', ni), h('label', { class: 'f' }, '메시지', mi, cnt),
-      h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: () => { name = ni.value; msg = mi.value; build(); } }, '← 꾸미기'), go));
+    wrap.append(h('div', { class: 'g-title' }, t('hello')), h('div', { class: 'center' }, w), h('label', { class: 'f' }, t('name'), ni), h('label', { class: 'f' }, t('msg'), mi, cnt),
+      h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: () => { name = ni.value; msg = mi.value; build(); } }, t('back')), go));
   }
-  /* 조종기: 조이스틱 + 말하기 + 포즈 */
   function play() {
     wrap.innerHTML = '';
-    const gone = () => { toast('캐릭터가 삭제됐어요. 다시 입장해 주세요'); myId = null; saveMe(null); intro(); };
+    const gone = () => { toast(t('gone')); myId = null; saveMe(null); intro(); };
     const push = patch => Store.updateGuest(myId, patch).catch(e => { if (String(e.message) === 'gone') gone(); });
     const syncCfg = () => { saveMe({ id: myId, name, cfg }); push({ cfg: normCfg(cfg) }); };
-    const me = W(4);
-    // 조이스틱
+    const me = W(2);
     const knob = h('div', { class: 'knob' }), pad = h('div', { class: 'joy' }, knob);
     let cur = '0,0', hb = null, pid = null;
     const send = (dx, dy) => { const k = dx + ',' + dy; if (k === cur) return; cur = k; push({ dir: { dx, dy }, dt: Date.now() }); clearInterval(hb); if (dx || dy) hb = setInterval(() => push({ dir: { dx, dy }, dt: Date.now() }), 3000); };
@@ -725,28 +775,25 @@ function startGuest() {
     pad.addEventListener('pointerdown', e => { pid = e.pointerId; pad.setPointerCapture(pid); moveTo(e); e.preventDefault(); });
     pad.addEventListener('pointermove', e => { if (e.pointerId === pid) moveTo(e); });
     pad.addEventListener('pointerup', release); pad.addEventListener('pointercancel', release);
-    // 말하기
-    const mi = h('input', { class: 'in', maxlength: '40', placeholder: '하고 싶은 말을 써 보세요', enterkeyhint: 'send' });
+    const mi = h('input', { class: 'in', maxlength: '40', placeholder: t('sayPh'), enterkeyhint: 'send' });
     let lastSend = 0;
     const say = async () => {
-      const t = mi.value.trim(); if (!t) { mi.focus(); return; }
-      if (Date.now() - lastSend < 1500) { toast('조금만 천천히요 🙂'); return; }
+      const v = mi.value.trim(); if (!v) { mi.focus(); return; }
+      if (Date.now() - lastSend < 1500) { toast(t('slow')); return; }
       lastSend = Date.now(); mi.value = '';
-      await push({ msg: t.slice(0, 40), mt: Date.now() }); toast('큰 화면에 말풍선이 떴어요!');
+      await push({ msg: v.slice(0, 40), mt: Date.now() }); toast(t('sent'));
     };
     mi.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); say(); } });
-    const quick = ['축하해요! 🎉', '사랑해요 💛', '안녕하세요~', '대박 👍', 'ㅋㅋㅋㅋ'];
-    // 포즈
     const chips = h('div', { class: 'chips' });
-    const drawChips = () => { chips.innerHTML = ''; POSE_NAMES.forEach((nm, i) => chips.append(h('button', { class: 'chip' + (cfg.pose === i ? ' on' : ''), onclick: () => { cfg.pose = i; drawChips(); syncCfg(); } }, nm))); };
+    const drawChips = () => { chips.innerHTML = ''; NAMES.pose[LANG].forEach((nm, i) => chips.append(h('button', { class: 'chip' + (cfg.pose === i ? ' on' : ''), onclick: () => { cfg.pose = i; drawChips(); syncCfg(); } }, nm))); };
     drawChips();
     wrap.append(
-      h('div', { class: 'me' }, me, h('div', {}, h('div', { class: 'g-title', style: 'text-align:left;font-size:20px' }, name), h('div', { class: 'g-sub', style: 'text-align:left' }, '큰 화면에서 내 이름이 노랗게 빛나요'))),
-      h('div', { class: 'box' }, h('h2', {}, '🕹 움직이기'), pad, h('div', { class: 'g-sub' }, '노란 버튼을 끌어서 걸어 다녀요')),
-      h('div', { class: 'box' }, h('h2', {}, '💬 말하기'), h('div', { class: 'sendrow' }, mi, h('button', { class: 'btn', onclick: say }, '보내기')),
-        h('div', { class: 'chips' }, quick.map(q => h('button', { class: 'chip', onclick: () => { mi.value = q; say(); } }, q)))),
-      h('div', { class: 'box' }, h('h2', {}, '🙌 포즈 바꾸기'), chips),
-      h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: () => openBuilder(cfg, () => { drawChips(); syncCfg(); }) }, '👕 다시 꾸미기'), h('button', { class: 'btn ghost', onclick: intro }, '처음 화면'))
+      h('div', { class: 'me' }, me, h('div', {}, h('div', { class: 'g-title', style: 'text-align:left;font-size:20px' }, name), h('div', { class: 'g-sub', style: 'text-align:left' }, t('glow')))),
+      h('div', { class: 'box' }, h('h2', {}, t('move')), pad, h('div', { class: 'g-sub' }, t('drag'))),
+      h('div', { class: 'box' }, h('h2', {}, t('say')), h('div', { class: 'sendrow' }, mi, h('button', { class: 'btn', onclick: say }, t('send'))),
+        h('div', { class: 'chips' }, t('quick').map(q => h('button', { class: 'chip', onclick: () => { mi.value = q; say(); } }, q)))),
+      h('div', { class: 'box' }, h('h2', {}, t('poseT')), chips),
+      h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: () => openBuilder(cfg, () => { drawChips(); syncCfg(); }) }, t('edit')), h('button', { class: 'btn ghost', onclick: intro }, t('home')))
     );
   }
   myId ? play() : intro();
@@ -760,11 +807,12 @@ function startAdmin() {
   }
   document.body.className = 'mobile';
   const wrap = h('div', { class: 'phone wide' }); app.innerHTML = ''; app.append(wrap);
-  let settings = fixSettings(null), loaded = false, hosts = [];
+  LANG = 'ko'; let settings = fixSettings(null), loaded = false, hosts = [];
   const f = {
     title: h('input', { class: 'in', maxlength: '30' }), subtitle: h('input', { class: 'in', maxlength: '40' }),
     bubbleSec: h('select', { class: 'in' }, [5, 8, 12, 20].map(n => h('option', { value: String(n) }, n + '초'))),
     hostCount: h('select', { class: 'in' }, h('option', { value: '0' }, '없음'), h('option', { value: '1' }, '1명'), h('option', { value: '2' }, '2명')),
+    lang: h('select', { class: 'in' }, h('option', { value: 'en' }, 'English'), h('option', { value: 'ko' }, '한국어')),
     showPanel: h('input', { type: 'checkbox' }), showQR: h('input', { type: 'checkbox' }), randomBubbles: h('input', { type: 'checkbox' })
   };
   const hostBox = h('div', { class: 'list' });
@@ -781,13 +829,13 @@ function startAdmin() {
   f.hostCount.onchange = renderHosts;
   Store.onSettings(s => {
     settings = s; if (loaded) return; loaded = true;
-    f.title.value = s.title; f.subtitle.value = s.subtitle; f.bubbleSec.value = String(s.bubbleSec);
+    f.title.value = s.title; f.subtitle.value = s.subtitle; f.lang.value = s.lang; LANG = 'ko'; f.bubbleSec.value = String(s.bubbleSec);
     f.showPanel.checked = s.showPanel; f.showQR.checked = s.showQR; f.randomBubbles.checked = s.randomBubbles;
     hosts = s.hosts.map(x => ({ name: x.name, cfg: { ...x.cfg } })); f.hostCount.value = String(hosts.length); renderHosts();
   });
   const save = h('button', { class: 'btn full' }, '설정 저장');
   save.onclick = async () => {
-    const s = { title: f.title.value.trim() || DEFAULT_SETTINGS.title, subtitle: f.subtitle.value.trim(), hostCount: hosts.length, hosts: hosts.map(x => ({ name: x.name.trim(), cfg: normCfg(x.cfg) })), showPanel: f.showPanel.checked, showQR: f.showQR.checked, randomBubbles: f.randomBubbles.checked, bubbleSec: +f.bubbleSec.value || 8 };
+    const s = { title: f.title.value.trim() || DEFAULT_SETTINGS.title, subtitle: f.subtitle.value.trim(), lang: f.lang.value, hostCount: hosts.length, hosts: hosts.map(x => ({ name: x.name.trim(), cfg: normCfg(x.cfg) })), showPanel: f.showPanel.checked, showQR: f.showQR.checked, randomBubbles: f.randomBubbles.checked, bubbleSec: +f.bubbleSec.value || 8 };
     save.disabled = true;
     try { await Store.saveSettings(s); toast('저장했어요 · 큰 화면에 바로 반영돼요'); } catch (e) { toast('저장 실패: ' + e.message); }
     save.disabled = false;
@@ -816,8 +864,9 @@ function startAdmin() {
       linkRow('📱 하객 입장 주소 (큰 화면 QR과 같음)', urlFor('guest'), h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: () => copy(urlFor('guest')) }, '주소 복사'), h('button', { class: 'btn ghost', onclick: () => window.open(urlFor('guest'), '_blank') }, '열어보기')))),
     h('div', { class: 'box' }, h('h2', {}, '행사 설정'),
       h('label', { class: 'f' }, '행사 제목 (큰 화면 하단)', f.title),
-      h('label', { class: 'f' }, '하객 화면 안내 문구', f.subtitle),
-      h('label', { class: 'f' }, '꽃 아치 아래 주인공', f.hostCount), hostBox,
+      h('label', { class: 'f' }, '참가자 화면 안내 문구 (비우면 기본 문구)', f.subtitle),
+      h('label', { class: 'f' }, '참가자·큰 화면 언어', f.lang),
+      h('label', { class: 'f' }, '큰 나무 앞 주인공', f.hostCount), hostBox,
       h('label', { class: 'tog' }, '오른쪽 메시지 패널', f.showPanel),
       h('label', { class: 'tog' }, 'QR 코드 표시', f.showQR),
       h('label', { class: 'tog' }, '랜덤 말풍선 (입장한 하객 메시지 다시 보여주기)', f.randomBubbles),
